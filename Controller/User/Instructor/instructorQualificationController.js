@@ -6,7 +6,7 @@ const {
 } = require("../../../Middleware/Validate/validateUser");
 const { deleteSingleFile } = require("../../../Util/deleteFile");
 const InstructorQualification = db.insturctorQualification;
-const Instructor = db.instructor;
+const Instructor = db.user;
 const { SHOW_BUNNY_FILE_HOSTNAME } = process.env;
 const { uploadFileToBunny, deleteFileToBunny } = require("../../../Util/bunny");
 const fs = require("fs");

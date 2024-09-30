@@ -54,7 +54,7 @@ instructor.put("/homeTutorTerm", homeTutorTerm);
 
 instructor.use(isInstructorForHomeTutor);
 
-// 4. Home Tutor Review
+// Home Tutor Review
 instructor.get("/hTReview/:id", getHTReview); //id = homeTutorId
 instructor.get("/hTAverageRating/:id", getHTAverageRating); //id = homeTutorId
 instructor.delete("/deleteHTReview/:id", softDeleteHTReview); //id = review Id

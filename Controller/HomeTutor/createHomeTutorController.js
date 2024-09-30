@@ -12,6 +12,7 @@ const HTServiceArea = db.hTServiceArea;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutorHistory = db.homeTutorHistory;
 const HTutorImages = db.hTImage;
+// const User = db.user;
 
 const { uploadFileToBunny } = require("../../Util/bunny");
 const { SHOW_BUNNY_FILE_HOSTNAME } = process.env;
@@ -96,6 +97,7 @@ exports.createHomeTutor = async (req, res) => {
       homeTutorId: homeTutor.id,
       updatedBy: "Instructor",
     });
+
     // Final Response
     res.status(200).send({
       success: true,
@@ -130,6 +132,18 @@ exports.addHTutorSeviceArea = async (req, res) => {
       return res.status(400).send({
         success: false,
         message: "This home tutor is not present!",
+      });
+    }
+    const slote = await HTServiceArea.findOne({
+      where: {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+      },
+    });
+    if (slote) {
+      return res.status(400).send({
+        success: false,
+        message: "This service area is present!",
       });
     }
     // Store in database
@@ -174,6 +188,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
     const homeTutorId = req.params.id;
     let serviceAreaId = req.body.serviceAreaId;
 
+    // Serivce Area
     if (serviceAreaId) {
       const isSAPresent = await HTServiceArea.findOne({
         where: { id: serviceAreaId, homeTutorId: homeTutorId },
@@ -192,15 +207,25 @@ exports.addHTutorTimeSlote = async (req, res) => {
         newServiceArea.radius &&
         newServiceArea.unit
       ) {
-        const area = await HTServiceArea.create({
-          locationName: newServiceArea.locationName,
-          latitude: parseFloat(newServiceArea.latitude),
-          longitude: parseFloat(newServiceArea.longitude),
-          radius: newServiceArea.radius,
-          unit: newServiceArea.unit,
-          homeTutorId: homeTutorId,
+        const isService = await HTServiceArea.findOne({
+          where: {
+            latitude: parseFloat(newServiceArea.latitude),
+            longitude: parseFloat(newServiceArea.longitude),
+          },
         });
-        serviceAreaId = area.dataValues.id;
+        if (!isService) {
+          const area = await HTServiceArea.create({
+            locationName: newServiceArea.locationName,
+            latitude: parseFloat(newServiceArea.latitude),
+            longitude: parseFloat(newServiceArea.longitude),
+            radius: newServiceArea.radius,
+            unit: newServiceArea.unit,
+            homeTutorId: homeTutorId,
+          });
+          serviceAreaId = area.dataValues.id;
+        } else {
+          serviceAreaId = isService.dataValues.id;
+        }
       } else {
         return res.status(400).send({
           success: false,
@@ -211,6 +236,19 @@ exports.addHTutorTimeSlote = async (req, res) => {
       return res.status(400).send({
         success: false,
         message: "Please select a service area!",
+      });
+    }
+    // Date validation
+    const todayIST = new Date();
+    todayIST.setMinutes(todayIST.getMinutes() + 330);
+    if (
+      new Date(`${startDate}T${startTime}:00.000Z`).getTime() <
+        todayIST.getTime() ||
+      new Date(`${endDate}T${startTime}:00.000Z`).getTime() < todayIST.getTime()
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "Please select appropriate date!",
       });
     }
 
@@ -241,34 +279,29 @@ exports.addHTutorTimeSlote = async (req, res) => {
         message: "This home tutor is not present!",
       });
     }
-    //  Validate date
-    const yesterday = new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000);
-    for (let i = 0; i < date.length; i++) {
-      const bookingDate = new Date(date[i]).getTime();
-      if (bookingDate <= yesterday) {
-        return res.status(400).send({
-          success: false,
-          message: `${date[i]} date is not acceptable!`,
-        });
-      }
-    }
+
     // Store in database
     for (let j = 0; j < date.length; j++) {
-      const today = `${date[j]}T18:30:00.000Z`;
+      const today = new Date(date[j]);
+      today.setDate(today.getDate() - 1);
+      const todayValidation = `${JSON.stringify(today).slice(
+        1,
+        11
+      )}T18:30:00.000Z`;
       // Get All Today Code
       let code;
-      const indtructorNumb = "INST1000"//req.instructorCode.substring(4);
+      const day = date[j].slice(8, 10);
+      const year = date[j].slice(2, 4);
+      const month = date[j].slice(5, 7);
+      const indtructorNumb = `${req.userCode.slice(4)}${day}${month}${year}`;
       const isSloteCode = await HTTimeSlot.findAll({
         where: {
-          createdAt: { [Op.gt]: today },
           sloteCode: { [Op.startsWith]: indtructorNumb },
         },
         order: [["createdAt", "ASC"]],
         paranoid: false,
       });
-      const day = date[j].slice(8, 10);
-      const year = date[j].slice(2, 4);
-      const month = date[j].slice(5, 7);
+
       if (isSloteCode.length > 0) {
         code = isSloteCode[isSloteCode.length - 1].sloteCode;
       }
@@ -286,12 +319,12 @@ exports.addHTutorTimeSlote = async (req, res) => {
       });
       if (!isSlote) {
         if (!code) {
-          code = indtructorNumb + day + month + year + 1;
+          code = indtructorNumb + 1;
         } else {
-          const digit = indtructorNumb.length + 6;
+          const digit = indtructorNumb.length;
           let lastDigits = code.substring(digit);
           let incrementedDigits = parseInt(lastDigits, 10) + 1;
-          code = indtructorNumb + day + month + year + incrementedDigits;
+          code = indtructorNumb + incrementedDigits;
         }
         // Store in database
         await HTTimeSlot.create({
@@ -351,7 +384,6 @@ exports.addHTutorImage = async (req, res) => {
         message: "This home tutor is not present!",
       });
     }
-    // console.log(files);
     // How mant file in already present
     const maxFileUpload = 3;
     const images = await HTutorImages.count({

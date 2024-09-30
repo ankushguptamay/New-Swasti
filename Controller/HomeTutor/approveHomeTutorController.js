@@ -5,9 +5,8 @@ const {
   changePublish,
   changeHTTimeSloteStatus,
 } = require("../../Middleware/Validate/validateUser");
-const Instructor = db.instructor;
+const User = db.user;
 const HomeTutor = db.homeTutor;
-const Therapy = db.therapy;
 const HTServiceArea = db.hTServiceArea;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutorHistory = db.homeTutorHistory;
@@ -34,13 +33,9 @@ exports.changeHomeTutorStatus = async (req, res) => {
       });
     }
     if (approvalStatusByAdmin === "Approved") {
-      await Instructor.update(
+      await User.update(
         { bio: tutor.instructorBio },
         { where: { id: tutor.instructorId } }
-      );
-      await Therapy.update(
-        { instructorBio: tutor.instructorBio },
-        { where: { instructorId: tutor.instructorId } }
       );
     }
     // Update tutor
@@ -197,13 +192,9 @@ exports.changeHTutorUpdationStatus = async (req, res) => {
       },
     });
     if (approvalStatusByAdmin === "Approved") {
-      await Instructor.update(
+      await User.update(
         { bio: history.instructorBio },
         { where: { id: homeTutor.instructorId } }
-      );
-      await Therapy.update(
-        { instructorBio: history.instructorBio },
-        { where: { instructorId: homeTutor.instructorId } }
       );
       await homeTutor.update({
         isGroupSO: history.isGroupSO,

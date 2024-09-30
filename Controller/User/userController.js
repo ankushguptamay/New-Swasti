@@ -390,6 +390,7 @@ exports.loginByEmail = async (req, res) => {
           userEmail: req.body.email,
           userName: isUser.name,
         };
+
         await sendEmail(options);
 
         const increaseNumber = parseInt(finaliseEmailCredential.emailSend) + 1;

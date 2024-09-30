@@ -1,5 +1,4 @@
 const db = require("../../../Models");
-const Instructor = db.instructor;
 const IBankDetail = db.instructorBankDetails;
 const IKYC = db.instructorKYC;
 const {
