@@ -1110,6 +1110,7 @@ exports.registerByNumber = async (req, res) => {
     // Create user in database
     const user = await User.create({
       email: req.body.email,
+      isInstructor,
       name: name,
       phoneNumber: req.body.phoneNumber,
       userCode,
