@@ -7,6 +7,13 @@ exports.courseCategoryValidation = (data) => {
   return schema.validate(data);
 };
 
+exports.yogaForCategoryValidation = (data) => {
+  const schema = joi.object().keys({
+    yogaFor: joi.string().required(),
+  }); // .options({ allowUnknown: true });
+  return schema.validate(data);
+};
+
 exports.courseCouponValidation = (data) => {
   const schema = joi.object().keys({
     couponTitle: joi.string().required(),

@@ -102,7 +102,7 @@ instructor.get("/experience/:id", getExperienceById);
 instructor.put("/experience/:id", updateExperiencen);
 instructor.delete("/experience/:id", deleteExperienceInstructor);
 
-instructor.use("ht", homeTutor);
-instructor.use("mas", master);
+instructor.use("/ht", homeTutor);
+instructor.use("/mas", master);
 
 module.exports = instructor;

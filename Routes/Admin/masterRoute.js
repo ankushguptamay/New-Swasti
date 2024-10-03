@@ -10,6 +10,11 @@ const {
   deleteCourseDuration,
 } = require("../../Controller/Master/courseDurationController");
 const {
+  addYogaForCategory,
+  getAllYogaForCategory,
+  deleteYogaForCategory,
+} = require("../../Controller/Master/yogaForCategoryCont");
+const {
   createCourseDurationType,
   deleteCourseDurationType,
   getAllCourseByType,
@@ -106,5 +111,9 @@ admin.delete("/deleteAdminBanner/:id", deleteAdminBanner);
 admin.post("/addHTSpecilization", addHTSpecilization);
 admin.get("/hTSpecilizations", getAllHTSpecilization);
 admin.delete("/deleteHTSpecilization/:id", deleteHTSpecilization);
+// 9. YogaForCategory
+admin.post("/y-f-category", addYogaForCategory);
+admin.get("/y-f-category", getAllYogaForCategory);
+admin.delete("/y-f-category/:id", deleteYogaForCategory);
 
 module.exports = admin;

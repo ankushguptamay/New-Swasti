@@ -35,6 +35,10 @@ db.userNotification = require("./Admin/userNotificationModel.js")(
 
 // Master
 db.coupon = require("./Master/couponModel.js")(sequelize, Sequelize);
+db.yogaForCategory = require("./Master/yogaForCategoryModel.js")(
+  sequelize,
+  Sequelize
+);
 db.adminBanner = require("./Master/bannerModel.js")(sequelize, Sequelize);
 db.courseCategory = require("./Master/courseCategoryModel.js")(
   sequelize,

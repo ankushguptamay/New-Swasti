@@ -10,6 +10,9 @@ const {
   getAllCourseType,
 } = require("../../../Controller/Master/courseTypeController");
 const {
+  getAllYogaForCategory,
+} = require("../../../Controller/Master/yogaForCategoryCont");
+const {
   getAllUniversity_Institute,
   getInstituteByUniversity,
   getOnlyUniversity,
@@ -35,7 +38,9 @@ const instructor = express.Router();
 
 // middleware
 const { verifyUserJWT } = require("../../../Middleware/verifyJWTToken");
-const { isInstructorProfileComplete } = require("../../../Middleware/isPresent");
+const {
+  isInstructorProfileComplete,
+} = require("../../../Middleware/isPresent");
 
 instructor.use(verifyUserJWT);
 instructor.use(isInstructorProfileComplete);
@@ -44,6 +49,8 @@ instructor.use(isInstructorProfileComplete);
 instructor.get("/coursecategories", getAllCourseCategory);
 instructor.get("/courseDurations", getAllCourseDuration);
 instructor.get("/courseTypes", getAllCourseType);
+
+instructor.get("/y-f-category", getAllYogaForCategory);
 
 instructor.get("/university_institutes", getAllUniversity_Institute);
 instructor.get("/university", getOnlyUniversity);
