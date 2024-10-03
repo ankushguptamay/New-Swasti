@@ -27,10 +27,10 @@ admin.put("/changePassword", verifyAdminJWT, isAdminPresent, changePassword);
 // Heart Api
 admin.get("/heartAPI", heartAPI);
 
-admin.use(homeTutor);
-admin.use(user);
-admin.use(master);
-admin.use(review);
-admin.use(dashNoti);
+admin.use("/ht", homeTutor);
+admin.use("/user", user);
+admin.use("/mas", master);
+admin.use("/review", review);
+admin.use("/dash", dashNoti);
 
 module.exports = admin;

@@ -26,10 +26,10 @@ app.use(cors());
 
 app.use("/files", express.static("./Resource"));
 
-app.use("/api/admin", admin);
-app.use("/api/user", user);
-app.use("/api/instructor", instructor);
-app.use("/api/student", student);
+app.use("/admin", admin);
+app.use("/user", user);
+app.use("/instructor", instructor);
+app.use("/student", student);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

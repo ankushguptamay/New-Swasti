@@ -35,7 +35,7 @@ student.delete(
   deleteUserProfile
 );
 
-student.use(homeTutors);
-student.use(publice);
+student.use("ht", homeTutors);
+student.use("pub", publice);
 
 module.exports = student;
