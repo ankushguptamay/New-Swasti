@@ -222,7 +222,7 @@ exports.registerByEmail = async (req, res) => {
                     </head>
                     <body>
                         <div class="verification-card">
-                            <img src="https://images.unsplash.com/photo-1636051028886-0059ad2383c8?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Logo" class="logo-img">
+                            <img src="https://swasi-bharat.b-cdn.net/logo-media/swasti_bharat.png?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Logo" class="logo-img">
                             <p style='font-size:14px'>Hi <span style=" font-weight:600">${email},</span></p>
                             <p style='font-size:14px;'>Please copy the One Time Password (OTP) below and enter it in the verification page on the Swasti.</p>
                              <div class="horizontal-line"></div>
@@ -231,7 +231,7 @@ exports.registerByEmail = async (req, res) => {
                             
                             <p style='font-size:14px;'>This code <span style="font-weight:600;" >expires in ${
                               parseInt(OTP_VALIDITY_IN_MILLISECONDS) / 1000 / 60
-                            } minutes.</span>Please,  <span style="font-weight:600;" >DONOT SHARE OR SEND THIS CODE TO ANYONE!</span></p>
+                            } minutes.</span>Please,  <span style="font-weight:600;" >DO NOT SHARE OR SEND THIS CODE TO ANYONE!</span></p>
                               <div class="horizontal-line"></div>
                         </div>
                     </body>
@@ -371,7 +371,7 @@ exports.loginByEmail = async (req, res) => {
                     </head>
                     <body>
                         <div class="verification-card">
-                            <img src="https://images.unsplash.com/photo-1636051028886-0059ad2383c8?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Logo" class="logo-img">
+                            <img src="https://swasi-bharat.b-cdn.net/logo-media/swasti_bharat.png?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Logo" class="logo-img">
                             <p style='font-size:14px'>Hi <span style=" font-weight:600">${
                               req.body.email
                             },</span></p>
@@ -382,7 +382,7 @@ exports.loginByEmail = async (req, res) => {
                             
                             <p style='font-size:14px;'>This code <span style="font-weight:600;" >expires in ${
                               parseInt(OTP_VALIDITY_IN_MILLISECONDS) / 1000 / 60
-                            } minutes.</span>Please,  <span style="font-weight:600;" >DONOT SHARE OR SEND THIS CODE TO ANYONE!</span></p>
+                            } minutes.</span>Please,  <span style="font-weight:600;" >DO NOT SHARE OR SEND THIS CODE TO ANYONE!</span></p>
                               <div class="horizontal-line"></div>
                         </div>
                     </body>
@@ -566,7 +566,7 @@ exports.getUser = async (req, res) => {
       ],
     });
     let profileComplete = 0;
-    let data = user ;
+    let data = user;
     if (user.isInstructor) {
       if (user.name) {
         profileComplete = profileComplete + 7;
