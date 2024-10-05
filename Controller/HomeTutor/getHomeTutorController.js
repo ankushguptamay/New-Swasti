@@ -469,7 +469,7 @@ exports.getHTTimeSloteForUser = async (req, res) => {
   try {
     const { date } = req.query;
     const yesterday = new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000);
-    const today = JSON.stringify(new Date());
+    let today = JSON.stringify(new Date());
     if (date) {
       const bookingDate = new Date(date).getTime();
       if (bookingDate <= yesterday) {
