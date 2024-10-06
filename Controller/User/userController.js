@@ -804,6 +804,16 @@ exports.registerUser = async (req, res) => {
         ownerId: user.id,
       });
     }
+
+    await UserNotification.create({
+      userId: user.id,
+      notification: `Welcome ${name} !
+      Thank you for registering with Swasti Bharat. 
+      You are now part of our vibrant community. 
+      Take a moment to set up your profile and start exploring our features. 
+      We are excited to support you on your journey!`,
+    });
+    
     // Email or SMS to Insturctor
     // Send final success response
     res.status(200).send({
@@ -1090,6 +1100,14 @@ exports.registerByNumber = async (req, res) => {
       vallidTill: new Date().getTime() + parseInt(OTP_VALIDITY_IN_MILLISECONDS),
       otp: otp,
       receiverId: user.id,
+    });
+    await UserNotification.create({
+      userId: user.id,
+      notification: `Welcome ${name} !
+      Thank you for registering with Swasti Bharat. 
+      You are now part of our vibrant community. 
+      Take a moment to set up your profile and start exploring our features. 
+      We are excited to support you on your journey!`,
     });
     // Send final success response
     res.status(200).send({
