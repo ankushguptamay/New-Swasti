@@ -339,4 +339,27 @@ db.hTServiceArea.addScope(
 //     }
 // }).catch((err) => { console.log(err) });
 
+// queryInterface
+//   .changeColumn("users", "userCode", {
+//     type: DataTypes.STRING,
+//     unique: true,
+//   })
+//   .then((res) => {
+//     console.log("change!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+
+// queryInterface
+//   .changeColumn("users", "isInstructor", {
+//     type: DataTypes.BOOLEAN,
+//   })
+//   .then((res) => {
+//     console.log("change!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+
 module.exports = db;

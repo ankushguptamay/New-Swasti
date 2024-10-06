@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       userCode: {
         type: DataTypes.STRING,
-        allowNull: false,
         unique: true,
       },
       instructorType: {
@@ -41,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         defaultValue: "Self",
       },
-      isInstructor: { type: DataTypes.BOOLEAN, defaultValue: false },
+      isInstructor: { type: DataTypes.BOOLEAN},
       location: { type: DataTypes.STRING },
       latitude: {
         type: DataTypes.FLOAT(10, 6),

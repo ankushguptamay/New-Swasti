@@ -13,6 +13,8 @@ const EmailCredential = db.emailCredential;
 const InstructorHistory = db.instructorHistory;
 const UserNotification = db.userNotification;
 const {
+  instructorValidation,
+  registerUserByAdmin,
   registerUserByEmail,
   loginUserByEmail,
   updateInstructor,
@@ -68,7 +70,7 @@ exports.registerByEmail = async (req, res) => {
     if (error) {
       return res.status(400).send(error.details[0].message);
     }
-    const { referralCode, email, phoneNumber, isInstructor } = req.body;
+    const { referralCode, email, phoneNumber } = req.body;
     // Check is present
     const isUser = await User.findOne({
       paranoid: false,
@@ -83,34 +85,6 @@ exports.registerByEmail = async (req, res) => {
       });
     }
 
-    // generate employee code
-    const today = new Date();
-    today.setMinutes(today.getMinutes() + 330);
-    const day = today.toISOString().slice(8, 10);
-    const year = today.toISOString().slice(2, 4);
-    const month = today.toISOString().slice(5, 7);
-
-    let preCode = "SWAU";
-    if (isInstructor) {
-      preCode = "SWAI";
-    }
-    let userCode, lastDigits;
-    let startWith = `${preCode}${day}${month}${year}`;
-    const isUserCode = await User.findOne({
-      where: { userCode: { [Op.startsWith]: startWith } },
-      paranoid: false,
-      order: [["createdAt", "DESC"]],
-    });
-    if (!isUserCode) {
-      lastDigits = 1;
-    } else {
-      lastDigits = parseInt(isUserCode.userCode.substring(10)) + 1;
-    }
-    userCode = `${startWith}${lastDigits}`;
-    while (await User.findOne({ where: { userCode } })) {
-      userCode = `${startWith}${lastDigits++}`;
-    }
-
     const name = capitalizeFirstLetter(req.body.name);
     const num = getRandomInt(7);
     // Create user in database
@@ -118,8 +92,6 @@ exports.registerByEmail = async (req, res) => {
       email: email,
       name: name,
       phoneNumber: phoneNumber,
-      userCode,
-      isInstructor,
       referralCode: referralCode,
       chakraBreakNumber: num + 1,
     });
@@ -757,7 +729,7 @@ exports.getUserForAdmin = async (req, res) => {
 exports.registerUser = async (req, res) => {
   try {
     // Validate Body
-    const { error } = registerUserByEmail(req.body);
+    const { error } = registerUserByAdmin(req.body);
     if (error) {
       return res.status(400).send(error.details[0].message);
     }
@@ -1060,7 +1032,7 @@ exports.registerByNumber = async (req, res) => {
     if (error) {
       return res.status(400).send(error.details[0].message);
     }
-    const { referralCode, isInstructor } = req.body;
+    const { referralCode } = req.body;
     // Check is present
     const isUser = await User.findOne({
       paranoid: false,
@@ -1077,33 +1049,6 @@ exports.registerByNumber = async (req, res) => {
         message: "This credentials already exist!!", // Redirect to login by phone number page
       });
     }
-    // generate employee code
-    const today = new Date();
-    today.setMinutes(today.getMinutes() + 330);
-    const day = today.toISOString().slice(8, 10);
-    const year = today.toISOString().slice(2, 4);
-    const month = today.toISOString().slice(5, 7);
-
-    let preCode = "SWAU";
-    if (isInstructor) {
-      preCode = "SWAI";
-    }
-    let userCode, lastDigits;
-    let startWith = `${preCode}${day}${month}${year}`;
-    const isUserCode = await User.findOne({
-      where: { userCode: { [Op.startsWith]: startWith } },
-      paranoid: false,
-      order: [["createdAt", "DESC"]],
-    });
-    if (!isUserCode) {
-      lastDigits = 1;
-    } else {
-      lastDigits = parseInt(isUserCode.userCode.substring(10)) + 1;
-    }
-    userCode = `${startWith}${lastDigits}`;
-    while (await User.findOne({ where: { userCode } })) {
-      userCode = `${startWith}${lastDigits++}`;
-    }
 
     const name = capitalizeFirstLetter(req.body.name);
     const num = getRandomInt(7);
@@ -1111,10 +1056,8 @@ exports.registerByNumber = async (req, res) => {
     // Create user in database
     const user = await User.create({
       email: req.body.email,
-      isInstructor,
       name: name,
       phoneNumber: req.body.phoneNumber,
-      userCode,
       referralCode,
       chakraBreakNumber: num + 1,
     });
@@ -1523,6 +1466,67 @@ exports.getReferralData = async (req, res) => {
       success: true,
       message: `Referral data fetched successfully!`,
       data: referral,
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.isInstructorPage = async (req, res) => {
+  try {
+    // Validate Body
+    const { error } = instructorValidation(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
+    }
+    const { isInstructor } = req.body;
+    const id = req.user.id;
+    // Check is present
+    const user = await User.findOne({ where: { id } });
+    if (!user) {
+      return res.status(400).send({
+        success: false,
+        message: "NOTPRESENT!",
+      });
+    }
+    // generate employee code
+    const today = new Date();
+    today.setMinutes(today.getMinutes() + 330);
+    const day = today.toISOString().slice(8, 10);
+    const year = today.toISOString().slice(2, 4);
+    const month = today.toISOString().slice(5, 7);
+
+    let preCode = "SWAU";
+    if (isInstructor) {
+      preCode = "SWAI";
+    }
+    let userCode, lastDigits;
+    let startWith = `${preCode}${day}${month}${year}`;
+    const isUserCode = await User.findOne({
+      where: { userCode: { [Op.startsWith]: startWith } },
+      paranoid: false,
+      order: [["createdAt", "DESC"]],
+    });
+    if (!isUserCode) {
+      lastDigits = 1;
+    } else {
+      lastDigits = parseInt(isUserCode.userCode.substring(10)) + 1;
+    }
+    userCode = `${startWith}${lastDigits}`;
+    while (await User.findOne({ where: { userCode } })) {
+      userCode = `${startWith}${lastDigits++}`;
+    }
+
+    // Create user in database
+    await user.update({ ...user, isInstructor, userCode });
+
+    // Send final success response
+    res.status(200).send({
+      success: true,
+      message: `Welcome to SWASTI!`,
     });
   } catch (err) {
     res.status(500).send({

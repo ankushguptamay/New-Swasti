@@ -89,6 +89,7 @@ exports.isInstructorForHomeTutor = async (req, res, next) => {
           { id: req.user.id },
           { email: req.user.email },
           { phoneNumber: req.user.phoneNumber },
+          { isInstructor: true },
         ],
       },
       include: [

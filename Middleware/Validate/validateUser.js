@@ -30,8 +30,28 @@ exports.registerUserByEmail = (data) => {
       .pattern(/^[0-9]+$/)
       .required(),
     referralCode: joi.string().optional(),
+  });
+  return schema.validate(data);
+};
+
+exports.instructorValidation = (data) => {
+  const schema = joi.object().keys({
     isInstructor: joi.boolean().required(),
-    // instructorType: joi.string().valid('Instructor', 'Teacher', 'Coach', 'Trainer').required()
+  });
+  return schema.validate(data);
+};
+
+exports.registerUserByAdmin = (data) => {
+  const schema = joi.object().keys({
+    name: joi.string().min(3).max(30).required(),
+    email: joi.string().email().required().label("Email"),
+    phoneNumber: joi
+      .string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    referralCode: joi.string().optional(),
+    isInstructor: joi.boolean().required(),
   });
   return schema.validate(data);
 };
@@ -156,7 +176,6 @@ exports.changeHTTimeSloteStatus = (data) => {
   });
   return schema.validate(data);
 };
-
 
 exports.addBankDetails = (data) => {
   const schema = joi.object().keys({

@@ -6,7 +6,11 @@ const {
   registerByNumber,
   loginByNumber,
   verifyNumberOTP,
+  isInstructorPage,
 } = require("../../Controller/User/userController");
+
+// Middle ware
+const { verifyUserJWT } = require("../../Middleware/verifyJWTToken");
 
 const user = express.Router();
 
@@ -17,5 +21,6 @@ user.post("/verifyEmailOTP", verifyEmailOTP);
 user.post("/registerByNumber", registerByNumber);
 user.post("/loginByNumber", loginByNumber);
 user.post("/verifyNumberOTP", verifyNumberOTP);
+user.post("/instructor-user", verifyUserJWT, isInstructorPage);
 
 module.exports = user;
