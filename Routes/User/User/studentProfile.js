@@ -8,6 +8,13 @@ const {
   addUpdateUserProfile,
   deleteUserProfile,
 } = require("../../../Controller/User/userProfileController");
+const {
+  addAddress,
+  updateAddress,
+  softDeleteAddress,
+  getAddressDetails,
+  getAllAddress,
+} = require("../../../Controller/User/addressController");
 const homeTutors = require("./homeTutor");
 const publice = require("./publicRoute");
 const student = express.Router();
@@ -34,6 +41,12 @@ student.delete(
   isStudentPresent,
   deleteUserProfile
 );
+
+student.post("/address", verifyUserJWT, addAddress);
+student.get("/address", verifyUserJWT, getAllAddress);
+student.get("/address/:id", verifyUserJWT, getAddressDetails);
+student.put("/address/:id", verifyUserJWT, updateAddress);
+student.delete("/address/:id", verifyUserJWT, softDeleteAddress);
 
 student.use("/ht", homeTutors);
 student.use("/pub", publice);

@@ -115,11 +115,15 @@ admin.post("/addHTSpecilization", addHTSpecilization);
 admin.get("/hTSpecilizations", getAllHTSpecilization);
 admin.delete("/deleteHTSpecilization/:id", deleteHTSpecilization);
 // 9. YogaForCategory
-admin.post("/y-f-category", addYogaForCategory);
+admin.post("/y-f-category", uploadImage.single("yfcIamge"), addYogaForCategory);
 admin.get("/y-f-category", getAllYogaForCategory);
 admin.delete("/y-f-category/:id", deleteYogaForCategory);
 admin.put("/y-f-category/:id", updateYogaForCategory);
-admin.put("/y-f-c-file/:id", addUpdateYFCategoryFile);
+admin.put(
+  "/y-f-c-file/:id",
+  uploadImage.single("yfcIamge"),
+  addUpdateYFCategoryFile
+);
 admin.delete("/y-f-c-file/:id", deleteYFCategoryFile);
 
 module.exports = admin;

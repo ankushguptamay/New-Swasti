@@ -73,6 +73,7 @@ db.instructorReview = require("./Review/instructorReviewModel.js")(
 db.user = require("./User/userModel.js")(sequelize, Sequelize);
 db.emailOTP = require("./User/emailOTPModel.js")(sequelize, Sequelize);
 db.chakra = require("./User/chakraModel.js")(sequelize, Sequelize);
+db.address = require("./User/userAddressModel.js")(sequelize, Sequelize);
 db.referralHistory = require("./User/referralHistoryModel.js")(
   sequelize,
   Sequelize
@@ -210,6 +211,12 @@ db.user.hasMany(db.userNotification, {
 // User Association with UserHTSlote
 db.user.hasMany(db.userHTSlote, { foreignKey: "userId", as: "userHTSlote" });
 db.userHTSlote.belongsTo(db.user, {
+  foreignKey: "userId",
+  as: "user",
+});
+// User Association with Address
+db.user.hasMany(db.address, { foreignKey: "userId", as: "address" });
+db.address.belongsTo(db.user, {
   foreignKey: "userId",
   as: "user",
 });

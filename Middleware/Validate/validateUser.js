@@ -20,6 +20,25 @@ exports.loginUserByNumber = (data) => {
   return schema.validate(data);
 };
 
+exports.validateAddress = (data) => {
+  const schema = joi.object().keys({
+    name: joi.string().min(3).max(30).required(),
+    email: joi.string().email().required().label("Email"),
+    phoneNumber: joi
+      .string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    address: joi.string().min(3).max(200).required(),
+    zipCode: joi.string().length(6).required(),
+    city: joi.string().required(),
+    country: joi.string().required(),
+    latitude: joi.string().required(),
+    longitude: joi.string().required(),
+  });
+  return schema.validate(data);
+};
+
 exports.registerUserByEmail = (data) => {
   const schema = joi.object().keys({
     name: joi.string().min(3).max(30).required(),
@@ -59,7 +78,6 @@ exports.registerUserByAdmin = (data) => {
 exports.updateInstructor = (data) => {
   const schema = joi.object().keys({
     name: joi.string().min(3).max(30).required(),
-    location: joi.string().required(),
     bio: joi.string().max(1000).required(),
     socialMediaLink: joi.string().optional(),
     facebook: joi.string().optional(),
@@ -68,8 +86,6 @@ exports.updateInstructor = (data) => {
     twitter_x: joi.string().optional(),
     languages: joi.array().required(),
     dateOfBirth: joi.string().required(),
-    latitude: joi.string().required(),
-    longitude: joi.string().required(),
   }); //.options({ allowUnknown: true });
   return schema.validate(data);
 };

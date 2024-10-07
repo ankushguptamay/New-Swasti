@@ -12,6 +12,7 @@ const UserWallet = db.userWallet;
 const EmailCredential = db.emailCredential;
 const InstructorHistory = db.instructorHistory;
 const UserNotification = db.userNotification;
+const Address = db.address;
 const {
   instructorValidation,
   registerUserByAdmin,
@@ -525,6 +526,10 @@ exports.getUser = async (req, res) => {
           as: "qualifications",
         },
         {
+          model: Address,
+          as: "address",
+        },
+        {
           model: UserProfile,
           as: "profilePic",
           where: { deletedThrough: null },
@@ -535,6 +540,19 @@ exports.getUser = async (req, res) => {
           model: InstructorExperience,
           as: "experience",
         },
+      ],
+      order: [
+        [
+          { model: InstructorQualification, as: "qualifications" },
+          "createdAt",
+          "DESC",
+        ],
+        [{ model: Address, as: "address" }, "createdAt", "DESC"],
+        [
+          { model: InstructorExperience, as: "experience" },
+          "createdAt",
+          "DESC",
+        ],
       ],
     });
     let profileComplete = 0;
@@ -577,6 +595,21 @@ exports.getUser = async (req, res) => {
       if (bank) profileComplete = profileComplete + 20;
 
       data = { data, profileComplete };
+    } else {
+      data = {
+        id: user.dataValues.id,
+        name: user.dataValues.name,
+        email: user.dataValues.email,
+        phoneNumber: user.dataValues.phoneNumber,
+        userCode: user.dataValues.userCode,
+        createdBy: user.dataValues.createdBy,
+        isInstructor: user.dataValues.isInstructor,
+        isOTPVerify: user.dataValues.isOTPVerify,
+        referralCode: user.dataValues.referralCode,
+        createdAt: user.dataValues.createdAt,
+        profilePic: user.dataValues.profilePic,
+        address: user.dataValues.address,
+      };
     }
     // Send final success response
     res.status(200).send({
@@ -813,7 +846,7 @@ exports.registerUser = async (req, res) => {
       Take a moment to set up your profile and start exploring our features. 
       We are excited to support you on your journey!`,
     });
-    
+
     // Email or SMS to Insturctor
     // Send final success response
     res.status(200).send({
@@ -977,15 +1010,12 @@ exports.updateInstructor = async (req, res) => {
     const {
       bio,
       socialMediaLink,
-      location,
       twitter_x,
       facebook,
       instagram,
       linkedIn,
       languages,
       dateOfBirth,
-      latitude,
-      longitude,
     } = req.body;
     const name = capitalizeFirstLetter(req.body.name);
     // store current data in history
@@ -996,7 +1026,6 @@ exports.updateInstructor = async (req, res) => {
       instructorType: instructor.instructorType,
       bio: instructor.bio,
       socialMediaLink: instructor.socialMediaLink,
-      location: instructor.location,
       instructorId: req.user.id,
       twitter_x: instructor.twitter_x,
       facebook: instructor.facebook,
@@ -1004,23 +1033,18 @@ exports.updateInstructor = async (req, res) => {
       linkedIn: instructor.linkedIn,
       languages: instructor.languages,
       dateOfBirth: instructor.dateOfBirth,
-      longitude: instructor.longitude,
-      latitude: instructor.latitude,
     });
     // Update
     await instructor.update({
       name: name,
       bio: bio,
       socialMediaLink: socialMediaLink,
-      location: location,
       twitter_x: twitter_x,
       facebook: facebook,
       instagram: instagram,
       linkedIn: linkedIn,
       languages: languages,
       dateOfBirth: dateOfBirth,
-      latitude: latitude,
-      longitude: longitude,
     });
     // Send final success response
     res.status(200).send({
