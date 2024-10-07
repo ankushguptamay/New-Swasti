@@ -346,54 +346,54 @@ db.hTServiceArea.addScope(
 //     }
 // }).catch((err) => { console.log(err) });
 
-queryInterface
-  .removeColumn("instructorHistorys", "location")
-  .then((res) => {
-    console.log("remove 1!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-queryInterface
-  .removeColumn("instructorHistorys", "latitude")
-  .then((res) => {
-    console.log("remove 2!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-queryInterface
-  .removeColumn("instructorHistorys", "longitude")
-  .then((res) => {
-    console.log("remove 3!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// queryInterface
+//   .removeColumn("instructorHistorys", "location")
+//   .then((res) => {
+//     console.log("remove 1!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+// queryInterface
+//   .removeColumn("instructorHistorys", "latitude")
+//   .then((res) => {
+//     console.log("remove 2!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+// queryInterface
+//   .removeColumn("instructorHistorys", "longitude")
+//   .then((res) => {
+//     console.log("remove 3!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
-queryInterface
-  .removeColumn("users", "location")
-  .then((res) => {
-    console.log("remove 4!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-queryInterface
-  .removeColumn("users", "latitude")
-  .then((res) => {
-    console.log("remove 5!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-queryInterface
-  .removeColumn("users", "longitude")
-  .then((res) => {
-    console.log("remove 6!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// queryInterface
+//   .removeColumn("users", "location")
+//   .then((res) => {
+//     console.log("remove 4!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+// queryInterface
+//   .removeColumn("users", "latitude")
+//   .then((res) => {
+//     console.log("remove 5!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+// queryInterface
+//   .removeColumn("users", "longitude")
+//   .then((res) => {
+//     console.log("remove 6!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
 module.exports = db;
