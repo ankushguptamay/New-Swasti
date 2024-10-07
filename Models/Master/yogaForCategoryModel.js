@@ -16,6 +16,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
+    description: {
+      type: DataTypes.STRING(1234),
+    },
+    path: {
+      type: DataTypes.STRING(1234),
+    },
+    fileName: {
+      type: DataTypes.STRING(1234),
+    },
   });
   const today = new Date();
   today.setMinutes(today.getMinutes() + 330);

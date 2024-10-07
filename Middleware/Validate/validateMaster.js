@@ -10,6 +10,7 @@ exports.courseCategoryValidation = (data) => {
 exports.yogaForCategoryValidation = (data) => {
   const schema = joi.object().keys({
     yogaFor: joi.string().required(),
+    description: joi.string().min(20).max(1000).optional(),
   }); // .options({ allowUnknown: true });
   return schema.validate(data);
 };

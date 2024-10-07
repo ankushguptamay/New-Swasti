@@ -13,6 +13,9 @@ const {
   addYogaForCategory,
   getAllYogaForCategory,
   deleteYogaForCategory,
+  updateYogaForCategory,
+  addUpdateYFCategoryFile,
+  deleteYFCategoryFile,
 } = require("../../Controller/Master/yogaForCategoryCont");
 const {
   createCourseDurationType,
@@ -115,5 +118,8 @@ admin.delete("/deleteHTSpecilization/:id", deleteHTSpecilization);
 admin.post("/y-f-category", addYogaForCategory);
 admin.get("/y-f-category", getAllYogaForCategory);
 admin.delete("/y-f-category/:id", deleteYogaForCategory);
+admin.put("/y-f-category/:id", updateYogaForCategory);
+admin.put("/y-f-c-file/:id", addUpdateYFCategoryFile);
+admin.delete("/y-f-c-file/:id", deleteYFCategoryFile);
 
 module.exports = admin;
