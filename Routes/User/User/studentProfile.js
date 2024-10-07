@@ -3,6 +3,7 @@ const {
   getUser,
   getMyChakra,
   getReferralData,
+  updateStudent,
 } = require("../../../Controller/User/userController");
 const {
   addUpdateUserProfile,
@@ -27,6 +28,7 @@ const uploadImage = require("../../../Middleware/uploadFile/image");
 student.get("/", verifyUserJWT, getUser);
 student.get("/chakras", verifyUserJWT, getMyChakra);
 student.get("/referralDatas", verifyUserJWT, getReferralData);
+student.put("/profile", verifyUserJWT, updateStudent);
 
 student.post(
   "/profilePic",

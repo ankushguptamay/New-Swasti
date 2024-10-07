@@ -1577,3 +1577,45 @@ exports.isInstructorPage = async (req, res) => {
     });
   }
 };
+
+exports.updateStudent = async (req, res) => {
+  try {
+    if (!req.body.name) {
+      return res.status(400).send({
+        success: false,
+        message: "Name is required!",
+      });
+    }
+    // Check perticular instructor present in database
+    const user = await User.findOne({
+      where: {
+        [Op.and]: [
+          { id: req.user.id },
+          { email: req.user.email },
+          { phoneNumber: req.user.phoneNumber },
+          { isInstructor: false },
+        ],
+      },
+    });
+    if (!user) {
+      return res.status(400).send({
+        success: false,
+        message: "User is not present!",
+      });
+    }
+    const name = capitalizeFirstLetter(req.body.name);
+
+    // Update
+    await user.update({ name: name });
+    // Send final success response
+    res.status(200).send({
+      success: true,
+      message: `Profile updated successfully!`,
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
