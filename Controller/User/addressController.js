@@ -127,7 +127,15 @@ exports.softDeleteAddress = async (req, res) => {
       });
     }
 
-    await isAddress.destroy();
+    if (req.user.isInstructor) {
+      await profile.update({
+        ...profile,
+        deletedThrough: "Self",
+      });
+      await isAddress.destroy();
+    } else {
+      await isAddress.destroy({ force: true });
+    }
     // Final response
     res.status(200).send({
       success: true,

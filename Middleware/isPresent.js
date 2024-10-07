@@ -2,6 +2,7 @@ const db = require("../Models");
 const Admin = db.admin;
 const User = db.user;
 const UserProfile = db.userProfile;
+const Address = db.address;
 const { Op } = require("sequelize");
 
 exports.isAdminPresent = async (req, res, next) => {
@@ -55,13 +56,16 @@ exports.isInstructorForCourse = async (req, res, next) => {
       instructor.profilePic &&
       instructor.languages &&
       instructor.bio &&
-      instructor.location &&
       instructor.dateOfBirth
     ) {
       if (instructor.profilePic.path) {
         if (instructor.instructorTermAccepted === true) {
           req.userCode = instructor.userCode;
-          req.user = { ...req.user, name: instructor.name };
+          req.user = {
+            ...req.user,
+            name: instructor.name,
+            isInstructor: instructor.isInstructor,
+          };
           next();
         } else {
           return res.status(400).json({
@@ -114,13 +118,16 @@ exports.isInstructorForHomeTutor = async (req, res, next) => {
       instructor.profilePic &&
       instructor.languages &&
       instructor.bio &&
-      instructor.location &&
       instructor.dateOfBirth
     ) {
       if (instructor.profilePic.path) {
         if (instructor.homeTutorTermAccepted === true) {
           req.userCode = instructor.userCode;
-          req.user = { ...req.user, name: instructor.name };
+          req.user = {
+            ...req.user,
+            name: instructor.name,
+            isInstructor: instructor.isInstructor,
+          };
           next();
         } else {
           return res.status(400).json({
@@ -173,13 +180,16 @@ exports.isInstructorForTherapist = async (req, res, next) => {
       instructor.profilePic &&
       instructor.languages &&
       instructor.bio &&
-      instructor.location &&
       instructor.dateOfBirth
     ) {
       if (instructor.profilePic.path) {
         if (instructor.therapistTermAccepted === true) {
           req.userCode = instructor.userCode;
-          req.user = { ...req.user, name: instructor.name };
+          req.user = {
+            ...req.user,
+            name: instructor.name,
+            isInstructor: instructor.isInstructor,
+          };
           next();
         } else {
           return res.status(400).json({
@@ -232,13 +242,16 @@ exports.isInstructorForYogaStudio = async (req, res, next) => {
       instructor.profilePic &&
       instructor.languages &&
       instructor.bio &&
-      instructor.location &&
       instructor.dateOfBirth
     ) {
       if (instructor.profilePic.path) {
         if (instructor.yogaStudioTermAccepted === true) {
           req.userCode = instructor.userCode;
-          req.user = { ...req.user, name: instructor.name };
+          req.user = {
+            ...req.user,
+            name: instructor.name,
+            isInstructor: instructor.isInstructor,
+          };
           next();
         } else {
           return res.status(400).json({
@@ -291,11 +304,15 @@ exports.isInstructorProfileComplete = async (req, res, next) => {
       instructor.profilePic &&
       instructor.languages &&
       instructor.bio &&
-      instructor.location &&
       instructor.dateOfBirth
     ) {
       if (instructor.profilePic.path) {
         req.userCode = instructor.userCode;
+        req.user = {
+          ...req.user,
+          name: instructor.name,
+          isInstructor: instructor.isInstructor,
+        };
         next();
       }
     } else {
@@ -327,6 +344,11 @@ exports.isStudentPresent = async (req, res, next) => {
       });
     }
     req.userName = student.name;
+    req.user = {
+      ...req.user,
+      name: student.name,
+      isInstructor: student.isInstructor,
+    };
     next();
   } catch (err) {
     res.status(500).send({ message: err.message });

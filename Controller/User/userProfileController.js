@@ -3,7 +3,7 @@ const { Op } = require("sequelize");
 const { deleteSingleFile } = require("../../Util/deleteFile");
 const UserProfile = db.userProfile;
 
-const { uploadFileToBunny } = require("../../Util/bunny");
+const { uploadFileToBunny, deleteFileToBunny } = require("../../Util/bunny");
 const { SHOW_BUNNY_FILE_HOSTNAME } = process.env;
 const fs = require("fs");
 const bunnyFolderName = "u-pro-doc";
@@ -25,7 +25,8 @@ exports.addUpdateUserProfile = async (req, res) => {
     const profile = await UserProfile.findOne({
       where: { userId: req.user.id },
     });
-    if (profile) {
+
+    if (profile && req.user.isInstructor) {
       // update deletedThrough
       await profile.update({
         ...profile,
@@ -33,13 +34,28 @@ exports.addUpdateUserProfile = async (req, res) => {
       });
       // soft delete previos profile
       await profile.destroy();
+
+      await UserProfile.create({
+        originalName: req.file.originalname,
+        path: `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`,
+        fileName: req.file.filename,
+        userId: req.user.id,
+      });
+    } else if (profile && !req.user.isInstructor) {
+      await profile.update({
+        ...profile,
+        originalName: req.file.originalname,
+        path: `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`,
+        fileName: req.file.filename,
+      });
+    } else {
+      await UserProfile.create({
+        originalName: req.file.originalname,
+        path: `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`,
+        fileName: req.file.filename,
+        userId: req.user.id,
+      });
     }
-    await UserProfile.create({
-      originalName: req.file.originalname,
-      path: `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`,
-      fileName: req.file.filename,
-      userId: req.user.id,
-    });
 
     // Final response
     res.status(200).send({
@@ -76,13 +92,27 @@ exports.deleteUserProfile = async (req, res) => {
         message: "Profile pic is not present!",
       });
     }
-    // update deletedThrough
-    await profile.update({
-      ...profile,
-      deletedThrough: deletedThrough,
-    });
-    // soft delete profile
-    await profile.destroy();
+
+    if (req.user) {
+      if (req.user.isInstructor) {
+        await profile.update({
+          ...profile,
+          deletedThrough: deletedThrough,
+        });
+        await profile.destroy();
+      } else {
+        if (profile.fileName) {
+          await deleteFileToBunny(bunnyFolderName, profile.fileName);
+        }
+        await profile.destroy({ force: true });
+      }
+    } else {
+      await profile.update({
+        ...profile,
+        deletedThrough: deletedThrough,
+      });
+      await profile.destroy();
+    }
     // Final response
     res.status(200).send({
       success: true,

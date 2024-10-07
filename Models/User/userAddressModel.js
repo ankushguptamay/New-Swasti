@@ -32,6 +32,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT(10, 6),
       },
       longitude: { type: DataTypes.FLOAT(10, 6) },
+      deletedThrough: {
+        type: DataTypes.STRING,
+        validate: {
+          isIn: [["Admin", "Self", "ByUpdation"]],
+        },
+      },
     },
     { paranoid: true }
   );

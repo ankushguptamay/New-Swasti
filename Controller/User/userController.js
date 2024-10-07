@@ -572,7 +572,7 @@ exports.getUser = async (req, res) => {
       if (user.bio) {
         profileComplete = profileComplete + 2;
       }
-      if (user.location) {
+      if (user.address.length >= 1) {
         profileComplete = profileComplete + 2;
       }
       if (user.dateOfBirth) {

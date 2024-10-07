@@ -15,6 +15,13 @@ const {
   getReferralData,
 } = require("../../../Controller/User/userController");
 const {
+  addAddress,
+  updateAddress,
+  softDeleteAddress,
+  getAddressDetails,
+  getAllAddress,
+} = require("../../../Controller/User/addressController");
+const {
   addExperience,
   updateExperiencen,
   deleteExperienceInstructor,
@@ -74,6 +81,13 @@ instructor.delete("/KYC/:id", deleteKYC);
 
 // Term and condition
 instructor.put("/instructorTerm", instructorTerm);
+
+// Address
+instructor.post("/address", addAddress);
+instructor.get("/address", getAllAddress);
+instructor.get("/address/:id", getAddressDetails);
+instructor.put("/address/:id", updateAddress);
+instructor.delete("/address/:id", softDeleteAddress);
 
 // Blow this profile should be complete
 instructor.use(isInstructorProfileComplete);
