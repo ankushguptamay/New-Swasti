@@ -25,15 +25,6 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      location: {
-        type: DataTypes.STRING,
-      },
-      latitude: {
-        type: DataTypes.FLOAT(10, 6),
-      },
-      longitude: {
-        type: DataTypes.FLOAT(10, 6),
-      },
       bio: {
         type: DataTypes.STRING(1234),
       },

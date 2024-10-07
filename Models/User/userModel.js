@@ -41,11 +41,6 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "Self",
       },
       isInstructor: { type: DataTypes.BOOLEAN},
-      location: { type: DataTypes.STRING },
-      latitude: {
-        type: DataTypes.FLOAT(10, 6),
-      },
-      longitude: { type: DataTypes.FLOAT(10, 6) },
       bio: { type: DataTypes.STRING(1234) },
       socialMediaLink: { type: DataTypes.STRING(1234) },
       linkedIn: { type: DataTypes.STRING },
