@@ -36,15 +36,6 @@ const {
 
 const instructor = express.Router();
 
-// middleware
-const { verifyUserJWT } = require("../../../Middleware/verifyJWTToken");
-const {
-  isInstructorProfileComplete,
-} = require("../../../Middleware/isPresent");
-
-instructor.use(verifyUserJWT);
-instructor.use(isInstructorProfileComplete);
-
 // Master
 instructor.get("/coursecategories", getAllCourseCategory);
 instructor.get("/courseDurations", getAllCourseDuration);

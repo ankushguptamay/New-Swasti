@@ -620,7 +620,7 @@ exports.getUser = async (req, res) => {
   } catch (err) {
     res.status(500).send({
       success: false,
-      message: err.message,
+      message: err
     });
   }
 };

@@ -14,17 +14,12 @@ const bunnyFolderName = "inst-doc";
 
 exports.addQualification = async (req, res) => {
   try {
-    // File should be exist
-    if (!req.file) {
-      return res.status(400).send({
-        success: false,
-        message: "Please upload a file!",
-      });
-    }
     // Validate Body
     const { error } = addQualification(req.body);
     if (error) {
-      deleteSingleFile(req.file.path);
+      if (req.file) {
+        deleteSingleFile(req.file.path);
+      }
       return res.status(400).send(error.details[0].message);
     }
     const {
@@ -43,16 +38,20 @@ exports.addQualification = async (req, res) => {
       where: { course: course, instructorId: req.user.id },
     });
     if (isQualification) {
-      deleteSingleFile(req.file.path);
+      if (req.file) {
+        deleteSingleFile(req.file.path);
+      }
       return res.status(400).send({
         success: false,
         message: "This qualification already exists!",
       });
     }
-    const fileStream = fs.createReadStream(req.file.path);
-    await uploadFileToBunny(bunnyFolderName, fileStream, req.file.filename);
-    // delete file from resource/servere
-    deleteSingleFile(req.file.path);
+    if (req.file) {
+      const fileStream = fs.createReadStream(req.file.path);
+      await uploadFileToBunny(bunnyFolderName, fileStream, req.file.filename);
+      // delete file from resource/servere
+      deleteSingleFile(req.file.path);
+    }
     // Find in database
     await InstructorQualification.create({
       courseType: courseType,

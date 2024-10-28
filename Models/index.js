@@ -388,7 +388,12 @@ db.hTServiceArea.addScope(
 //     console.log(err);
 //   });
 // queryInterface
-//   .removeColumn("users", "longitude")
+//   .addColumn("userAddresses", "deletedThrough", {
+//     type: DataTypes.STRING,
+//     validate: {
+//       isIn: [["Admin", "Self", "ByUpdation"]],
+//     },
+//   })
 //   .then((res) => {
 //     console.log("remove 6!");
 //   })

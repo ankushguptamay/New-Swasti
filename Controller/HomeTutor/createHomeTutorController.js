@@ -261,7 +261,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
     const noOfDate = getDifferenceInDays(startDate, endDate) + 1;
     const date = [];
     for (i = 0; i < noOfDate; i++) {
-      const today = new Date();
+      const today = new Date(startDate);
       today.setDate(today.getDate() + i);
       date.push(today.toISOString().slice(0, 10));
     }
@@ -279,7 +279,6 @@ exports.addHTutorTimeSlote = async (req, res) => {
         message: "This home tutor is not present!",
       });
     }
-
     // Store in database
     for (let j = 0; j < date.length; j++) {
       const today = new Date(date[j]);

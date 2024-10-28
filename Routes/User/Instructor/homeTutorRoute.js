@@ -41,13 +41,9 @@ const {
 const instructor = express.Router();
 
 // middleware
-const { verifyUserJWT } = require("../../../Middleware/verifyJWTToken");
 const {
-  isInstructorProfileComplete,
   isInstructorForHomeTutor,
 } = require("../../../Middleware/isPresent");
-
-instructor.use(verifyUserJWT);
 
 // Term and condition
 instructor.put("/homeTutorTerm", homeTutorTerm);
