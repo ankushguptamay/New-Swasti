@@ -346,16 +346,16 @@ db.hTServiceArea.addScope(
 //     }
 // }).catch((err) => { console.log(err) });
 
-queryInterface
-  .addColumn("hTTimeSlots", "isOnline", {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  })
-  .then((res) => {
-    console.log("added!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// queryInterface
+//   .addColumn("hTTimeSlots", "isOnline", {
+//     type: DataTypes.BOOLEAN,
+//     defaultValue: false,
+//   })
+//   .then((res) => {
+//     console.log("added!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
 module.exports = db;
