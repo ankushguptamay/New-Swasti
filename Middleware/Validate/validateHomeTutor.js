@@ -32,6 +32,7 @@ exports.hTutorLocationValidation = (data) => {
 
 exports.hTutorTimeSloteValidation = (data) => {
   const schema = joi.object().keys({
+    isOnline: joi.boolean().required(),
     startTime: joi.string().required(),
     startDate: joi.string().required(),
     endDate: joi.string().required(),

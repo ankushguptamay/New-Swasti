@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      isOnline: { type: DataTypes.BOOLEAN, defaultValue: false },
       serviceType: {
         type: DataTypes.STRING,
         validate: {

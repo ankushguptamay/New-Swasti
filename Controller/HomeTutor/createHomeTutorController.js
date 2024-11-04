@@ -184,6 +184,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
       serviceType,
       newServiceArea,
       noOfPeople,
+      isOnline,
     } = req.body;
     const homeTutorId = req.params.id;
     let serviceAreaId = req.body.serviceAreaId;
@@ -329,6 +330,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         await HTTimeSlot.create({
           date: date[j],
           password: otp,
+          isOnline:isOnline,
           timeDurationInMin: timeDurationInMin,
           sloteCode: code,
           serviceType: serviceType,

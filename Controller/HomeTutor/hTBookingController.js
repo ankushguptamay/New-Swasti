@@ -247,7 +247,7 @@ exports.getMyHTBookedSloteForUser = async (req, res) => {
 
 exports.getMyHTBookedSloteForInstructor = async (req, res) => {
   try {
-    const { date, isBooked, search } = req.query;
+    const { date, isBooked, search, isOnline } = req.query;
     // 3 days validity
     const date1 = JSON.stringify(new Date());
     const date2 = JSON.stringify(
@@ -258,19 +258,11 @@ exports.getMyHTBookedSloteForInstructor = async (req, res) => {
     );
     let dateCondition;
     if (date) {
-      // const array = [`${date1.slice(1, 11)}`, `${date2.slice(1, 11)}`, `${date3.slice(1, 11)}`]
-      // if (array.indexOf(date) === -1) {
-      //     return res.status(400).send({
-      //         success: false,
-      //         message: "Date should be with in required limit!"
-      //     });
-      // } else {
-      //     dateCondition = date;
-      // }
       dateCondition = date;
     } else {
       dateCondition = date1.slice(1, 11);
     }
+
     // Get instructor Home tutor
     const homeTutor = await HomeTutor.findAll({
       where: {
@@ -293,6 +285,14 @@ exports.getMyHTBookedSloteForInstructor = async (req, res) => {
       condition.push({
         [Op.or]: [{ sloteCode: { [Op.substring]: search } }],
       });
+    }
+
+    if (isOnline) {
+      if (isOnline === "true") {
+        condition.push({ isOnline: true });
+      } else if (isOnline === "false") {
+        condition.push({ isOnline: false });
+      }
     }
 
     const slote = await HTTimeSlot.findAll({
