@@ -132,6 +132,7 @@ db.homeTutorHistory = require("./HomeTutor/homeTutorHistoryModel.js")(
 );
 db.hTBooking = require("./HomeTutor/hTBookingModel.js")(sequelize, Sequelize);
 db.hTReview = require("./Review/hTReviewModel.js")(sequelize, Sequelize);
+db.appVersion = require("./User/appVersionModel.js")(sequelize, Sequelize);
 
 // Notification
 db.createNotification = require("./createNotificationModel.js")(

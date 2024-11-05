@@ -8,6 +8,7 @@ const admin = require("./Routes/Admin/authRoute");
 const user = require("./Routes/User/authUser");
 const instructor = require("./Routes/User/Instructor/profileRoute");
 const student = require("./Routes/User/User/studentProfile");
+const version = require("./Routes/versionRoute");
 
 const db = require("./Models");
 
@@ -30,6 +31,7 @@ app.use("/admin", admin);
 app.use("/user", user);
 app.use("/instructor", instructor);
 app.use("/student", student);
+app.use("/swasti", version);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
