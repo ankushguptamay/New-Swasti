@@ -620,7 +620,7 @@ exports.getUser = async (req, res) => {
   } catch (err) {
     res.status(500).send({
       success: false,
-      message: err
+      message: err,
     });
   }
 };
@@ -642,7 +642,7 @@ exports.getAllUser = async (req, res) => {
       condition.push({
         [Op.or]: [
           { name: { [Op.substring]: search } },
-          { eamil: { [Op.substring]: search } },
+          { email: { [Op.substring]: search } },
           { userCode: { [Op.substring]: search } },
         ],
       });
@@ -936,7 +936,7 @@ exports.getAllSoftDeletedUser = async (req, res) => {
       condition.push({
         [Op.or]: [
           { name: { [Op.substring]: search } },
-          { eamil: { [Op.substring]: search } },
+          { email: { [Op.substring]: search } },
           { userCode: { [Op.substring]: search } },
         ],
       });
@@ -1221,6 +1221,8 @@ exports.verifyNumberOTP = async (req, res) => {
         "email",
         "isInstructor",
         "userCode",
+        "referralCode",
+        "isOTPVerify",
       ],
     });
     if (!user) {
@@ -1241,6 +1243,7 @@ exports.verifyNumberOTP = async (req, res) => {
     // Chakra
     if (!user.isOTPVerify) {
       await user.update({ ...user, isOTPVerify: true });
+      console.log(user.referralCode);
       if (user.referralCode) {
         const referral = await User.findOne({
           where: { userCode: user.referralCode },

@@ -48,19 +48,16 @@ const instructor = express.Router();
 
 // Middleware
 const { verifyUserJWT } = require("../../../Middleware/verifyJWTToken");
-const {
-  isInstructorProfileComplete,
-} = require("../../../Middleware/isPresent");
 const uploadImageAndPDF = require("../../../Middleware/uploadFile/imageAndPDF");
 const uploadImage = require("../../../Middleware/uploadFile/image");
 
 instructor.use(verifyUserJWT);
 
 // Profile
-instructor.put("/update", verifyUserJWT, updateInstructor);
-instructor.get("/", verifyUserJWT, getUser);
-instructor.get("/chakras", verifyUserJWT, getMyChakra);
-instructor.get("/referralDatas", verifyUserJWT, getReferralData);
+instructor.put("/update", updateInstructor);
+instructor.get("/", getUser);
+instructor.get("/chakras", getMyChakra);
+instructor.get("/referralDatas", getReferralData);
 
 instructor.post(
   "/profilePic",
@@ -90,7 +87,38 @@ instructor.put("/address/:id", updateAddress);
 instructor.delete("/address/:id", softDeleteAddress);
 
 // Blow this profile should be complete
-instructor.use(isInstructorProfileComplete);
+instructor.use((req, res) => {
+  if (req.user.isInstructor) {
+    if (
+      req.user.name &&
+      req.user.email &&
+      req.user.phoneNumber &&
+      req.user.profilePic &&
+      req.user.languages &&
+      req.user.bio &&
+      req.user.dateOfBirth
+    ) {
+      if (req.user.profilePic.path) {
+        req.userCode = req.user.userCode;
+        next();
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Please complete your profile!",
+        });
+      }
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete your profile!",
+      });
+    }
+  } else {
+    return res.send({
+      message: "Instructor is not present! Are you register?.. ",
+    });
+  }
+});
 
 // Qualification
 instructor.get("/qualification/:id", getQualificationById);

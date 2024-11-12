@@ -40,15 +40,20 @@ const {
 
 const instructor = express.Router();
 
-// middleware
-const {
-  isInstructorForHomeTutor,
-} = require("../../../Middleware/isPresent");
-
 // Term and condition
 instructor.put("/homeTutorTerm", homeTutorTerm);
 
-instructor.use(isInstructorForHomeTutor);
+instructor.use((req, res) => {
+  if (req.user.homeTutorTermAccepted === true) {
+    req.userCode = req.user.userCode;
+    next();
+  } else {
+    return res.status(400).json({
+      success: false,
+      message: "Please accept term and condition for Home Tutor!",
+    });
+  }
+});
 
 // Home Tutor Review
 instructor.get("/hTReview/:id", getHTReview); //id = homeTutorId

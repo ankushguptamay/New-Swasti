@@ -18,13 +18,6 @@ const {
 } = require("../../../Controller/Review/hTReviewController");
 const student = express.Router();
 
-// middleware
-const { verifyUserJWT } = require("../../../Middleware/verifyJWTToken");
-const { isStudentPresent } = require("../../../Middleware/isPresent");
-
-student.use(verifyUserJWT);
-student.use(isStudentPresent);
-
 // Home Tutor
 student.get("/homeTutors", getHomeTutorForUser);
 student.get("/homeTutors/:id", getHomeTutorByIdForUser);

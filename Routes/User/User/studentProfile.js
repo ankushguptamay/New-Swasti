@@ -22,35 +22,43 @@ const student = express.Router();
 
 // middleware
 const { verifyUserJWT } = require("../../../Middleware/verifyJWTToken");
-const { isStudentPresent } = require("../../../Middleware/isPresent");
 const uploadImage = require("../../../Middleware/uploadFile/image");
 
-student.get("/", verifyUserJWT, getUser);
-student.get("/chakras", verifyUserJWT, getMyChakra);
-student.get("/referralDatas", verifyUserJWT, getReferralData);
-student.put("/profile", verifyUserJWT, updateStudent);
+// Public
+student.use("/pub", publice);
+
+student.use(verifyUserJWT);
+
+student.get("/", getUser);
+student.get("/chakras", getMyChakra);
+student.get("/referralDatas", getReferralData);
+student.put("/profile", updateStudent);
+
+// Only for student
+student.use((req, res) => {
+  if (req.user.isInstructor === false) {
+    req.userCode = req.user.userCode;
+    next();
+  } else {
+    return res.send({
+      message: "User is not present! Are you register?.. ",
+    });
+  }
+});
 
 student.post(
   "/profilePic",
-  verifyUserJWT,
-  isStudentPresent,
   uploadImage.single("StudentProfile"),
   addUpdateUserProfile
 );
-student.delete(
-  "/profilePic/:id",
-  verifyUserJWT,
-  isStudentPresent,
-  deleteUserProfile
-);
+student.delete("/profilePic/:id", deleteUserProfile);
 
-student.post("/address", verifyUserJWT, addAddress);
-student.get("/address", verifyUserJWT, getAllAddress);
-student.get("/address/:id", verifyUserJWT, getAddressDetails);
-student.put("/address/:id", verifyUserJWT, updateAddress);
-student.delete("/address/:id", verifyUserJWT, softDeleteAddress);
+student.post("/address", addAddress);
+student.get("/address", getAllAddress);
+student.get("/address/:id", getAddressDetails);
+student.put("/address/:id", updateAddress);
+student.delete("/address/:id", softDeleteAddress);
 
 student.use("/ht", homeTutors);
-student.use("/pub", publice);
 
 module.exports = student;
