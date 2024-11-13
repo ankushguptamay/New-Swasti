@@ -5,6 +5,7 @@ const pattern =
 exports.loginUserByEmail = (data) => {
   const schema = joi.object().keys({
     email: joi.string().email().required().label("Email"),
+    referralCode: joi.string().optional(),
   });
   return schema.validate(data);
 };
@@ -16,6 +17,7 @@ exports.loginUserByNumber = (data) => {
       .length(10)
       .pattern(/^[0-9]+$/)
       .required(),
+    referralCode: joi.string().optional(),
   });
   return schema.validate(data);
 };

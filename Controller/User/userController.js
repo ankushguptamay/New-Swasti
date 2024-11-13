@@ -261,11 +261,16 @@ exports.loginByEmail = async (req, res) => {
     }
     // Check is present
     const isUser = await User.findOne({ where: { email: req.body.email } });
+
+    let data = { email: req.body.email };
+    if (req.body.referralCode) {
+      data = { email: req.body.email, referralCode: req.body.referralCode };
+    }
     if (!isUser) {
       return res.status(400).send({
         success: false,
         message: "NOTPRESENT!", // Redirect to register page, where only name and mobile number field will open
-        data: { email: req.body.email },
+        data: data,
       });
     }
     // Generate OTP for Email
@@ -1158,11 +1163,18 @@ exports.loginByNumber = async (req, res) => {
     const isUser = await User.findOne({
       where: { phoneNumber: req.body.phoneNumber },
     });
+    let data = { phoneNumber: req.body.phoneNumber };
+    if (req.body.referralCode) {
+      data = {
+        phoneNumber: req.body.phoneNumber,
+        referralCode: req.body.referralCode,
+      };
+    }
     if (!isUser) {
       return res.status(400).send({
         success: false,
         message: "NOTPRESENT!", // Redirect to register page, where only name and email field will open
-        data: { phoneNumber: req.body.phoneNumber },
+        data: data,
       });
     }
     // Generate OTP for Email
