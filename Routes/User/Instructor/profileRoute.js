@@ -87,7 +87,7 @@ instructor.put("/address/:id", updateAddress);
 instructor.delete("/address/:id", softDeleteAddress);
 
 // Blow this profile should be complete
-instructor.use((req, res) => {
+instructor.use((req, res, next) => {
   if (req.user.isInstructor) {
     if (
       req.user.name &&

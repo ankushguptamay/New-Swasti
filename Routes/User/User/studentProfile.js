@@ -35,7 +35,7 @@ student.get("/referralDatas", getReferralData);
 student.put("/profile", updateStudent);
 
 // Only for student
-student.use((req, res) => {
+student.use((req, res, next) => {
   if (req.user.isInstructor === false) {
     req.userCode = req.user.userCode;
     next();

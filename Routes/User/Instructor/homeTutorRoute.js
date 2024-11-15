@@ -43,7 +43,7 @@ const instructor = express.Router();
 // Term and condition
 instructor.put("/homeTutorTerm", homeTutorTerm);
 
-instructor.use((req, res) => {
+instructor.use((req, res, next) => {
   if (req.user.homeTutorTermAccepted === true) {
     req.userCode = req.user.userCode;
     next();
