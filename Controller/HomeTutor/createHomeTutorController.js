@@ -261,7 +261,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
     }
     const noOfDate = getDifferenceInDays(startDate, endDate) + 1;
     const date = [];
-    for (i = 0; i < noOfDate; i++) {
+    for (let i = 0; i < noOfDate; i++) {
       const today = new Date(startDate);
       today.setDate(today.getDate() + i);
       date.push(today.toISOString().slice(0, 10));
@@ -282,12 +282,6 @@ exports.addHTutorTimeSlote = async (req, res) => {
     }
     // Store in database
     for (let j = 0; j < date.length; j++) {
-      const today = new Date(date[j]);
-      today.setDate(today.getDate() - 1);
-      const todayValidation = `${JSON.stringify(today).slice(
-        1,
-        11
-      )}T18:30:00.000Z`;
       // Get All Today Code
       let code;
       const day = date[j].slice(8, 10);
@@ -330,7 +324,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         await HTTimeSlot.create({
           date: date[j],
           password: otp,
-          isOnline:isOnline,
+          isOnline: isOnline,
           timeDurationInMin: timeDurationInMin,
           sloteCode: code,
           serviceType: serviceType,
