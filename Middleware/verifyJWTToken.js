@@ -39,6 +39,7 @@ const verifyUserJWT = async (req, res, next) => {
         "dateOfBirth",
         "isInstructor",
         "homeTutorTermAccepted",
+        "userCode",
       ],
       include: [
         {
