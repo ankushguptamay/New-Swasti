@@ -44,6 +44,7 @@ exports.getMyHomeTutorForInstructor = async (req, res) => {
           where: {
             deletedThrough: null,
           },
+          attributes: ["id", "path", "createdAt"],
           required: false,
         },
       ],
@@ -196,6 +197,7 @@ exports.getHomeTutorById = async (req, res) => {
           where: {
             deletedThrough: null,
           },
+          attributes: ["id", "path", "createdAt"],
           required: false,
         },
       ],
@@ -335,6 +337,17 @@ exports.getHomeTutorForUser = async (req, res) => {
       where: {
         [Op.and]: condition,
       },
+      includes: [
+        {
+          model: HTutorImages,
+          as: "images",
+          where: {
+            deletedThrough: null,
+          },
+          attributes: ["id", "path", "createdAt"],
+          required: false,
+        },
+      ],
       order: [["createdAt", "DESC"]],
     });
     // Final Response
@@ -393,6 +406,17 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
           model: HomeTutor,
           as: "homeTutors",
           where: { approvalStatusByAdmin: "Approved", isPublish: true },
+          include: [
+            {
+              model: HTutorImages,
+              as: "images",
+              where: {
+                deletedThrough: null,
+              },
+              attributes: ["id", "path", "createdAt"],
+              required: false,
+            },
+          ],
         },
       ],
     });
@@ -447,6 +471,7 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
           where: {
             deletedThrough: null,
           },
+          attributes: ["id", "path", "createdAt"],
           required: false,
         },
       ],
