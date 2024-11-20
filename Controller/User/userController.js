@@ -12,6 +12,7 @@ const UserWallet = db.userWallet;
 const EmailCredential = db.emailCredential;
 const InstructorHistory = db.instructorHistory;
 const UserNotification = db.userNotification;
+const HomeTutor = db.homeTutor;
 const Address = db.address;
 const {
   instructorValidation,
@@ -1051,6 +1052,11 @@ exports.updateInstructor = async (req, res) => {
       languages: languages,
       dateOfBirth: dateOfBirth,
     });
+    // Update Bio in home tutor
+    await HomeTutor.update(
+      { instructorBio: bio },
+      { where: { instructorId: req.user.id } }
+    );
     // Send final success response
     res.status(200).send({
       success: true,

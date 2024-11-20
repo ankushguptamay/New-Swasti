@@ -9,6 +9,7 @@ const HTTimeSlot = db.hTTimeSlote;
 const HomeTutorHistory = db.homeTutorHistory;
 const HTutorImages = db.hTImage;
 const UserNotification = db.userNotification;
+const InstructorExperience = db.instructorExperience;
 
 exports.getMyHomeTutorForInstructor = async (req, res) => {
   try {
@@ -334,10 +335,24 @@ exports.getHomeTutorForUser = async (req, res) => {
     const homeTutor = await HomeTutor.findAll({
       limit: recordLimit,
       offset: offSet,
+      attributes: [
+        "id",
+        "homeTutorName",
+        "isGroupSO",
+        "isPrivateSO",
+        "yogaFor",
+        "instructorId",
+        "privateSessionPrice_Day",
+        "privateSessionPrice_Month",
+        "groupSessionPrice_Day",
+        "groupSessionPrice_Month",
+        "approvalStatusByAdmin",
+        "createdAt",
+      ],
       where: {
         [Op.and]: condition,
       },
-      includes: [
+      include: [
         {
           model: HTutorImages,
           as: "images",
@@ -350,13 +365,28 @@ exports.getHomeTutorForUser = async (req, res) => {
       ],
       order: [["createdAt", "DESC"]],
     });
+
+    const transFormData = [];
+    for (let i = 0; i < homeTutor.length; i++) {
+      const experiences = await InstructorExperience.findAll({
+        where: {
+          instructorId: homeTutor[i].dataValues.instructorId,
+          deletedThrough: null,
+        },
+        attributes: ["id", "joinDate", "workHistory", "role"],
+      });
+      transFormData.push({
+        ...homeTutor[i].dataValues,
+        experiences: experiences.map((exp) => exp.get({ plain: true })),
+      });
+    }
     // Final Response
     res.status(200).send({
       success: true,
       message: "Home tutor fetched successfully!",
       totalPage: Math.ceil(totalTutor / recordLimit),
       currentPage: currentPage,
-      data: homeTutor,
+      data: transFormData,
     });
   } catch (err) {
     res.status(500).send({
