@@ -347,13 +347,13 @@ db.hTServiceArea.addScope(
 //     }
 // }).catch((err) => { console.log(err) });
 
-queryInterface
-  .removeColumn("homeTutors", "isPublish")
-  .then((res) => {
-    console.log("removed!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// queryInterface
+//   .removeColumn("homeTutors", "isPublish")
+//   .then((res) => {
+//     console.log("removed!");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
 module.exports = db;
