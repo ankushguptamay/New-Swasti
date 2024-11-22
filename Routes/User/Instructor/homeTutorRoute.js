@@ -20,7 +20,6 @@ const {
   getHTServiceAreaByHTId,
 } = require("../../../Controller/HomeTutor/getHomeTutorController");
 const {
-  publishHomeTutor,
   changeHTTimeSloteStatus,
   viewUserNotifications,
 } = require("../../../Controller/HomeTutor/approveHomeTutorController");
@@ -81,7 +80,6 @@ instructor.put("/viewUserNotifications", viewUserNotifications);
 
 instructor.get("/myHTBookedSlotes", getMyHTBookedSloteForInstructor);
 
-instructor.put("/publishHomeTutor/:id", publishHomeTutor);
 instructor.put("/changeHTTimeSloteStatus/:id", changeHTTimeSloteStatus);
 
 instructor.put("/updateHomeTutor/:id", updateHomeTutor);

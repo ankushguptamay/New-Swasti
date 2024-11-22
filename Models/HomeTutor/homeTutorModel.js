@@ -50,10 +50,6 @@ module.exports = (sequelize, DataTypes) => {
                 isIn: [['Admin', 'Instructor']]
             }
         },
-        isPublish: {
-            type: DataTypes.BOOLEAN,
-            defaultValue: false
-        },
         anyUpdateRequest: {
             type: DataTypes.BOOLEAN,
             defaultValue: true

@@ -268,10 +268,7 @@ exports.getHomeTutorForUser = async (req, res) => {
       offSet = (parseInt(page) - 1) * recordLimit;
       currentPage = parseInt(page);
     }
-    const condition = [
-      { approvalStatusByAdmin: "Approved" },
-      { isPublish: true },
-    ];
+    const condition = [{ approvalStatusByAdmin: "Approved" }];
     // Search
     if (search) {
       condition.push({
@@ -435,7 +432,7 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
         {
           model: HomeTutor,
           as: "homeTutors",
-          where: { approvalStatusByAdmin: "Approved", isPublish: true },
+          where: { approvalStatusByAdmin: "Approved" },
           include: [
             {
               model: HTutorImages,
@@ -475,7 +472,6 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
         id: req.params.id,
         deletedThrough: null,
         approvalStatusByAdmin: "Approved",
-        isPublish: true,
       },
       include: [
         {

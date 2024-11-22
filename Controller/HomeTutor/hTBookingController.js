@@ -250,12 +250,6 @@ exports.getMyHTBookedSloteForInstructor = async (req, res) => {
     const { date, isBooked, search, isOnline } = req.query;
     // 3 days validity
     const date1 = JSON.stringify(new Date());
-    const date2 = JSON.stringify(
-      new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000)
-    );
-    const date3 = JSON.stringify(
-      new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000)
-    );
     let dateCondition;
     if (date) {
       dateCondition = date;
@@ -265,10 +259,7 @@ exports.getMyHTBookedSloteForInstructor = async (req, res) => {
 
     // Get instructor Home tutor
     const homeTutor = await HomeTutor.findAll({
-      where: {
-        instructorId: req.user.id,
-        isPublish: true,
-      },
+      where: { instructorId: req.user.id },
     });
     const homeTutorId = [];
     for (let i = 0; i < homeTutor.length; i++) {

@@ -2,7 +2,6 @@ const db = require("../../Models");
 const { Op } = require("sequelize");
 const {
   changeQualificationStatus,
-  changePublish,
   changeHTTimeSloteStatus,
 } = require("../../Middleware/Validate/validateUser");
 const User = db.user;
@@ -53,57 +52,6 @@ exports.changeHomeTutorStatus = async (req, res) => {
     res.status(200).send({
       success: true,
       message: `Home tutor ${approvalStatusByAdmin} successfully!`,
-    });
-  } catch (err) {
-    res.status(500).send({
-      success: false,
-      message: err.message,
-    });
-  }
-};
-
-exports.publishHomeTutor = async (req, res) => {
-  try {
-    // Validate Body
-    const { error } = changePublish(req.body);
-    if (error) {
-      return res.status(400).send(error.details[0].message);
-    }
-    const { isPublish } = req.body;
-    const instructorId = req.user.id;
-    // Change message
-    let message = "unpublish";
-    if (isPublish === true) {
-      message = "publish";
-    }
-    // Find Tutor In Database
-    const tutor = await HomeTutor.findOne({
-      where: {
-        id: req.params.id,
-        instructorId: instructorId,
-      },
-    });
-    if (!tutor) {
-      return res.status(400).send({
-        success: false,
-        message: "This home tutor is not present!",
-      });
-    }
-    if (tutor.approvalStatusByAdmin !== "Approved") {
-      return res.status(400).send({
-        success: false,
-        message: "This home tutor is not approved!",
-      });
-    }
-    // Update tutor
-    await tutor.update({
-      ...tutor,
-      isPublish: isPublish,
-    });
-    // Final Response
-    res.status(200).send({
-      success: true,
-      message: `Home tutor ${message} successfully!`,
     });
   } catch (err) {
     res.status(500).send({
