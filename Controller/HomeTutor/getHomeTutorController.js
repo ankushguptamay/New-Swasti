@@ -276,14 +276,22 @@ exports.getHomeTutorForUser = async (req, res) => {
       });
     }
     // Filter
-    // if (language) {
-    //     condition.push({ language: { [Op.contains]: language } });
-    // }
+    if (language) {
+      condition.push({ language: { [Op.substring]: language } });
+    }
     if (isPersonal) {
-      condition.push({ isPrivateSO: isPersonal });
+      if (isPersonal == "true") {
+        condition.push({ isPrivateSO: true });
+      } else {
+        condition.push({ isPrivateSO: false });
+      }
     }
     if (isGroup) {
-      condition.push({ isGroupSO: isGroup });
+      if (isGroup == "true") {
+        condition.push({ isGroupSO: true });
+      } else {
+        condition.push({ isGroupSO: false });
+      }
     }
     if (price) {
       condition.push({
@@ -356,7 +364,7 @@ exports.getHomeTutorForUser = async (req, res) => {
           where: {
             deletedThrough: null,
           },
-          attributes: ["id", "path", "createdAt"],
+          attributes: ["path"],
           required: false,
         },
       ],
@@ -365,16 +373,35 @@ exports.getHomeTutorForUser = async (req, res) => {
 
     const transFormData = [];
     for (let i = 0; i < homeTutor.length; i++) {
-      const experiences = await InstructorExperience.findAll({
-        where: {
-          instructorId: homeTutor[i].dataValues.instructorId,
-          deletedThrough: null,
-        },
-        attributes: ["id", "joinDate", "workHistory", "role"],
-      });
+      const [experiences, serviceAreas] = await Promise.all([
+        InstructorExperience.findAll({
+          where: {
+            instructorId: homeTutor[i].dataValues.instructorId,
+            deletedThrough: null,
+          },
+          attributes: ["id", "joinDate", "workHistory", "role"],
+        }),
+        HTServiceArea.scope({
+          method: ["distance", latitude, longitude, distance, unit],
+        }).findAll({
+          where: {
+            deletedThrough: null,
+            homeTutorId: homeTutor[i].dataValues.id,
+          },
+          attributes: [
+            "id",
+            "locationName",
+            "latitude",
+            "longitude",
+            "pincode",
+          ],
+          order: db.sequelize.col("distance"),
+        }),
+      ]);
       transFormData.push({
         ...homeTutor[i].dataValues,
         experiences: experiences.map((exp) => exp.get({ plain: true })),
+        serviceAreas: serviceAreas.map((exp) => exp.get({ plain: true })),
       });
     }
     // Final Response
@@ -417,14 +444,14 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
     const totalAreas = await HTServiceArea.scope({
       method: ["distance", latitude, longitude, distance, unit],
     }).findAll({
-      attributes: ["id", "locationName", "latitude", "longitude"],
+      attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
       order: db.sequelize.col("distance"),
     });
     // Find Areas
     const areas = await HTServiceArea.scope({
       method: ["distance", latitude, longitude, distance, unit],
     }).findAll({
-      attributes: ["id", "locationName", "latitude", "longitude"],
+      attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
       order: db.sequelize.col("distance"),
       limit: recordLimit,
       offset: offSet,
@@ -432,7 +459,21 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
         {
           model: HomeTutor,
           as: "homeTutors",
-          where: { approvalStatusByAdmin: "Approved" },
+          where: { approvalStatusByAdmin: "Approved", deletedThrough: null },
+          attributes: [
+            "id",
+            "homeTutorName",
+            "isGroupSO",
+            "isPrivateSO",
+            "yogaFor",
+            "instructorId",
+            "privateSessionPrice_Day",
+            "privateSessionPrice_Month",
+            "groupSessionPrice_Day",
+            "groupSessionPrice_Month",
+            "approvalStatusByAdmin",
+            "createdAt",
+          ],
           include: [
             {
               model: HTutorImages,
@@ -440,20 +481,43 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
               where: {
                 deletedThrough: null,
               },
-              attributes: ["id", "path", "createdAt"],
+              attributes: ["path"],
               required: false,
             },
           ],
         },
       ],
     });
+    const transFormData = [];
+    for (let i = 0; i < areas.length; i++) {
+      const experiences = await InstructorExperience.findAll({
+        where: {
+          instructorId: areas[i].dataValues.homeTutors.instructorId,
+          deletedThrough: null,
+        },
+        attributes: ["id", "joinDate", "workHistory", "role"],
+      });
+      const homeTutor = areas[i].dataValues.homeTutors;
+      transFormData.push({
+        ...homeTutor,
+        experiences: experiences.map((exp) => exp.get({ plain: true })),
+        images: areas[i].dataValues.homeTutors.images,
+        serviceAreas: {
+          id: areas[i].dataValues.id,
+          locationName: areas[i].dataValues.locationName,
+          latitude: areas[i].dataValues.latitude,
+          longitude: areas[i].dataValues.longitude,
+          pincode: areas[i].dataValues.pincode,
+        },
+      });
+    }
     // Final Response
     res.status(200).send({
       success: true,
       message: "Home tutor fetched successfully!",
       totalPage: Math.ceil(totalAreas.length / recordLimit),
       currentPage: currentPage,
-      data: areas,
+      data: transFormData,
     });
   } catch (err) {
     res.status(500).send({
@@ -465,49 +529,94 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
 
 exports.getHomeTutorByIdForUser = async (req, res) => {
   try {
-    const date = JSON.stringify(new Date());
-    const todayDate = date.slice(1, 11);
-    const homeTutor = await HomeTutor.findOne({
-      where: {
-        id: req.params.id,
-        deletedThrough: null,
-        approvalStatusByAdmin: "Approved",
-      },
-      include: [
-        {
-          model: HTServiceArea,
-          as: "serviceAreas",
-          where: {
-            deletedThrough: null,
-          },
-          required: false,
+    const { latitude, longitude, distance = 20, unit = "km" } = req.query;
+
+    if (latitude && longitude) {
+      const date = JSON.stringify(new Date());
+      const todayDate = date.slice(1, 11);
+      const homeTutor = await HomeTutor.findOne({
+        where: {
+          id: req.params.id,
+          deletedThrough: null,
+          approvalStatusByAdmin: "Approved",
         },
-        {
-          model: HTTimeSlot,
-          as: "timeSlotes",
-          where: {
-            deletedThrough: null,
-            date: todayDate,
+        attributes: [
+          "id",
+          "homeTutorName",
+          "isGroupSO",
+          "isPrivateSO",
+          "yogaFor",
+          "instructorId",
+          "privateSessionPrice_Day",
+          "privateSessionPrice_Month",
+          "groupSessionPrice_Day",
+          "groupSessionPrice_Month",
+          "approvalStatusByAdmin",
+          "createdAt",
+        ],
+        include: [
+          {
+            model: HTTimeSlot,
+            as: "timeSlotes",
+            where: {
+              deletedThrough: null,
+              date: todayDate,
+            },
+            attributes: [
+              "id",
+              "date",
+              "time",
+              "timeDurationInMin",
+              "isBooked",
+              "isOnline",
+              "serviceType",
+              "noOfPeople",
+              "sloteCode",
+              "appointmentStatus",
+              "createdAt",
+            ],
+            required: false,
           },
-          required: false,
-        },
-        {
-          model: HTutorImages,
-          as: "images",
-          where: {
-            deletedThrough: null,
+          {
+            model: HTutorImages,
+            as: "images",
+            where: {
+              deletedThrough: null,
+            },
+            attributes: ["path"],
+            required: false,
           },
-          attributes: ["id", "path", "createdAt"],
-          required: false,
+        ],
+      });
+      // Service Area
+      const serviceAreas = await HTServiceArea.scope({
+        method: ["distance", latitude, longitude, distance, unit],
+      }).findAll({
+        where: { deletedThrough: null, homeTutorId: req.params.id },
+        attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
+        order: db.sequelize.col("distance"),
+      });
+      // Experience
+      const experiences = await InstructorExperience.findAll({
+        where: {
+          instructorId: homeTutor.dataValues.instructorId,
+          deletedThrough: null,
         },
-      ],
-    });
-    // Final Response
-    res.status(200).send({
-      success: true,
-      message: "Home tutor fetched successfully!",
-      data: homeTutor,
-    });
+        attributes: ["id", "joinDate", "workHistory", "role"],
+        raw: true,
+      });
+      // Final Response
+      res.status(200).send({
+        success: true,
+        message: "Home tutor fetched successfully!",
+        data: { ...homeTutor.dataValues, serviceAreas, experiences },
+      });
+    } else {
+      res.status(400).send({
+        success: false,
+        message: "User location is important!",
+      });
+    }
   } catch (err) {
     res.status(500).send({
       success: false,

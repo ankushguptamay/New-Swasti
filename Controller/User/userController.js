@@ -569,7 +569,7 @@ exports.getUser = async (req, res) => {
       }
       if (user.profilePic) {
         if (user.profilePic.path) {
-          profileComplete = profileComplete + 2;
+          profileComplete = profileComplete + 4;
         }
       }
       if (user.languages) {
@@ -578,9 +578,9 @@ exports.getUser = async (req, res) => {
       if (user.bio) {
         profileComplete = profileComplete + 2;
       }
-      if (user.address.length >= 1) {
-        profileComplete = profileComplete + 2;
-      }
+      // if (user.address.length >= 1) {
+      //   profileComplete = profileComplete + 2;
+      // }
       if (user.dateOfBirth) {
         profileComplete = profileComplete + 2;
       }
