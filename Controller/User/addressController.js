@@ -21,11 +21,12 @@ exports.addAddress = async (req, res) => {
       longitude,
     } = req.body;
     const name = req.body.name.trim();
-    const isName = await Address.findOne({ where: { name } });
-    if (isName) {
+    const addressType = req.body.addressType.trim();
+    const isType = await Address.findOne({ where: { addressType } });
+    if (isType) {
       return res.status(400).send({
         success: false,
-        message: "This address name is already present!",
+        message: "This address type is already present!",
       });
     }
 
@@ -72,6 +73,7 @@ exports.updateAddress = async (req, res) => {
       longitude,
     } = req.body;
     const name = req.body.name.trim();
+    const addressType = req.body.addressType.trim();
 
     const id = req.params.id;
     const isAddress = await Address.findOne({ where: { id } });
@@ -82,12 +84,12 @@ exports.updateAddress = async (req, res) => {
       });
     }
 
-    if (name !== isAddress.name) {
-      const isName = await Address.findOne({ where: { name } });
-      if (isName) {
+    if (addressType !== isAddress.addressType) {
+      const isType = await Address.findOne({ where: { addressType } });
+      if (isType) {
         return res.status(400).send({
           success: false,
-          message: "This address name is already present!",
+          message: "This address type is already present!",
         });
       }
     }
@@ -102,6 +104,7 @@ exports.updateAddress = async (req, res) => {
       country,
       latitude,
       longitude,
+      addressType,
     });
     // Final response
     res.status(200).send({

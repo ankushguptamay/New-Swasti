@@ -348,9 +348,9 @@ db.hTServiceArea.addScope(
 // }).catch((err) => { console.log(err) });
 
 // queryInterface
-//   .removeColumn("homeTutors", "isPublish")
+//   .addColumn("userAddresses", "addressType", { type: DataTypes.STRING })
 //   .then((res) => {
-//     console.log("removed!");
+//     console.log("added!");
 //   })
 //   .catch((err) => {
 //     console.log(err);

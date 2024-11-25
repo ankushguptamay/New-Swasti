@@ -37,6 +37,7 @@ exports.validateAddress = (data) => {
     country: joi.string().required(),
     latitude: joi.string().required(),
     longitude: joi.string().required(),
+    addressType: joi.string().required(),
   });
   return schema.validate(data);
 };

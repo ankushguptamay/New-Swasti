@@ -7,6 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
+      addressType: {
+        type: DataTypes.STRING, // Home, Office, Hotel
+      },
       name: {
         type: DataTypes.STRING,
       },
