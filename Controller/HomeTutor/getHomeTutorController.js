@@ -952,3 +952,210 @@ exports.getUserNotification = async (req, res) => {
     });
   }
 };
+
+exports.getHTMorningEveningTimeSlote = async (req, res) => {
+  try {
+    const {
+      date,
+      page,
+      limit,
+      isPersonal,
+      isGroup,
+      price,
+      language,
+      latitude,
+      longitude,
+      isMorning,
+    } = req.query;
+
+    // Pagination
+    const recordLimit = parseInt(limit) || 10;
+    let offSet = 0;
+    let currentPage = 1;
+    if (page) {
+      offSet = (parseInt(page) - 1) * recordLimit;
+      currentPage = parseInt(page);
+    }
+    const condition = [
+      { approvalStatusByAdmin: "Approved" },
+      { deletedThrough: null },
+    ];
+
+    // Filter
+    if (language) {
+      condition.push({ language: { [Op.substring]: language } });
+    }
+    if (isPersonal) {
+      if (isPersonal == "true") {
+        condition.push({ isPrivateSO: true });
+      } else {
+        condition.push({ isPrivateSO: false });
+      }
+    }
+    if (isGroup) {
+      if (isGroup == "true") {
+        condition.push({ isGroupSO: true });
+      } else {
+        condition.push({ isGroupSO: false });
+      }
+    }
+    if (price) {
+      condition.push({
+        [Op.or]: [
+          { privateSessionPrice_Day: { [Op.lte]: parseFloat(price) } },
+          { privateSessionPrice_Month: { [Op.lte]: parseFloat(price) } },
+          { groupSessionPrice_Day: { [Op.lte]: parseFloat(price) } },
+          { groupSessionPrice_Month: { [Op.lte]: parseFloat(price) } },
+        ],
+      });
+    }
+    // Location is mendatory
+    const tutorId = [];
+    if (latitude && longitude) {
+      const unit = "km"; // km for kilometer m for mile
+      const distance = 20;
+      const totalLocation = await HTServiceArea.scope({
+        method: [
+          "distance",
+          parseFloat(latitude),
+          parseFloat(longitude),
+          distance,
+          unit,
+        ],
+      }).findAll({
+        attributes: ["id", "homeTutorId"],
+        order: db.sequelize.col("distance"),
+      });
+      for (let i = 0; i < totalLocation.length; i++) {
+        tutorId.push(totalLocation.homeTutorId);
+      }
+      condition.push({ id: tutorId });
+    } else {
+      res.status(400).send({
+        success: false,
+        message: "Your location is required!",
+      });
+    }
+
+    const slotCondition = [
+      { deletedThrough: null },
+      { date },
+      { isBooked: false },
+    ];
+    // Got All Home tutor
+    const homeTutor = await HomeTutor.findAll({
+      where: { [Op.and]: condition },
+      attributes: ["id"],
+    });
+    const finalHomeTutorIds = [];
+    for (let i = 0; i < homeTutor.length; i++) {
+      finalHomeTutorIds.push(homeTutor[i].dataValues.id);
+    }
+    // Push finalHomeTutorIds in slot condition
+    slotCondition.push({ homeTutorId: finalHomeTutorIds });
+
+    // Morning Condition with perticular date
+    let message = "Morning";
+    const morning_evening = isMorning ? isMorning : "true";
+    const todayDate = new Date(new Date().getTime() + 330 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+    let today;
+    if (date) {
+      const bookingDate = new Date(date).getTime();
+      if (bookingDate < new Date(todayDate).getTime()) {
+        return res.status(400).send({
+          success: false,
+          message: `${date} date is not acceptable!`,
+        });
+      } else {
+        today = date;
+      }
+    } else {
+      today = todayDate;
+    }
+    slotCondition.push({ date: today });
+    if (morning_evening == "true") {
+      slotCondition.push({
+        [Op.or]: [
+          { time: { [Op.gte]: "01:00" } },
+          { time: { [Op.lt]: "13:00" } },
+        ],
+      });
+    } else {
+      message = "Evening";
+      slotCondition.push({
+        [Op.or]: [
+          { time: { [Op.gte]: "13:00" } },
+          { time: { [Op.lt]: "23:59" } },
+        ],
+      });
+    }
+
+    // Fetch data
+    const [totalSlote, slote] = await Promise.all([
+      HTTimeSlot.count({
+        where: { [Op.and]: slotCondition },
+      }),
+      HTTimeSlot.findAll({
+        limit: recordLimit,
+        offset: offSet,
+        where: { [Op.and]: slotCondition },
+        attributes: [
+          "id",
+          "date",
+          "time",
+          "timeDurationInMin",
+          "isBooked",
+          "isOnline",
+          "serviceType",
+          "noOfPeople",
+          "appointmentStatus",
+          "serviceAreaId",
+        ],
+        include: [
+          {
+            model: HomeTutor,
+            as: "homeTutors",
+            attributes: [
+              "id",
+              "homeTutorName",
+              "isGroupSO",
+              "isPrivateSO",
+              "yogaFor",
+            ],
+          },
+        ],
+      }),
+    ]);
+
+    const transFormData = [];
+    for (let i = 0; i < slote.length; i++) {
+      const serviceArea = await HTServiceArea.scope({
+        method: ["distance", latitude, longitude, distance, unit],
+      }).findOne({
+        where: {
+          deletedThrough: null,
+          id: slote[i].dataValues.serviceAreaId,
+        },
+        attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
+        order: db.sequelize.col("distance"),
+      });
+      transFormData.push({ ...slote[i].dataValues, serviceArea });
+    }
+
+    // Final Response
+    res.status(200).send({
+      success: true,
+      message: `${message} Time slote fetched successfully!`,
+      totalPage: Math.ceil(totalSlote / recordLimit),
+      currentPage: currentPage,
+      data: transFormData,
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};

@@ -4,6 +4,7 @@ const {
   getHomeTutorByIdForUser,
   getNearestHomeTutorForUser,
   getHTTimeSloteForUser,
+  getHTMorningEveningTimeSlote,
 } = require("../../../Controller/HomeTutor/getHomeTutorController");
 const {
   createHTOrder,
@@ -20,6 +21,7 @@ const student = express.Router();
 
 // Home Tutor
 student.get("/homeTutors", getHomeTutorForUser);
+student.get("/hTMorningEveningSlots", getHTMorningEveningTimeSlote);
 student.get("/homeTutors/:id", getHomeTutorByIdForUser);
 student.get("/nearestHomeTutors", getNearestHomeTutorForUser);
 student.get("/getTimeSlote/:id", getHTTimeSloteForUser);
