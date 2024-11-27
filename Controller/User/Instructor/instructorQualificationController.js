@@ -47,12 +47,13 @@ exports.addQualification = async (req, res) => {
       });
     }
 
-    let originalname, filename;
+    let originalname, filename, path;
     if (req.file) {
       const fileStream = fs.createReadStream(req.file.path);
       await uploadFileToBunny(bunnyFolderName, fileStream, req.file.filename);
       originalname = req.file.originalname;
       filename = req.file.filename;
+      path = `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`;
       // delete file from resource/servere
       deleteSingleFile(req.file.path);
     }
@@ -68,7 +69,7 @@ exports.addQualification = async (req, res) => {
       certificationNumber: certificationNumber,
       qualificationIn: qualificationIn,
       documentOriginalName: originalname,
-      documentPath: `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`,
+      documentPath: path,
       documentFileName: filename,
       instructorId: req.user.id,
       approvalStatusByAdmin: "Pending",
