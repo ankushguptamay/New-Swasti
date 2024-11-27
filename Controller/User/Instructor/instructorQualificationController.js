@@ -46,9 +46,13 @@ exports.addQualification = async (req, res) => {
         message: "This qualification already exists!",
       });
     }
+
+    let originalname, filename;
     if (req.file) {
       const fileStream = fs.createReadStream(req.file.path);
       await uploadFileToBunny(bunnyFolderName, fileStream, req.file.filename);
+      originalname = req.file.originalname;
+      filename = req.file.filename;
       // delete file from resource/servere
       deleteSingleFile(req.file.path);
     }
@@ -63,9 +67,9 @@ exports.addQualification = async (req, res) => {
       marks: marks,
       certificationNumber: certificationNumber,
       qualificationIn: qualificationIn,
-      documentOriginalName: req.file.originalname,
+      documentOriginalName: originalname,
       documentPath: `${SHOW_BUNNY_FILE_HOSTNAME}/${bunnyFolderName}/${req.file.filename}`,
-      documentFileName: req.file.filename,
+      documentFileName: filename,
       instructorId: req.user.id,
       approvalStatusByAdmin: "Pending",
     });
