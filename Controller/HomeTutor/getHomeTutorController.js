@@ -259,6 +259,8 @@ exports.getHomeTutorForUser = async (req, res) => {
       latitude,
       longitude,
       experience,
+      distance,
+      yogaFor,
     } = req.query;
     // Pagination
     const recordLimit = parseInt(limit) || 10;
@@ -278,6 +280,9 @@ exports.getHomeTutorForUser = async (req, res) => {
     // Filter
     if (language) {
       condition.push({ language: { [Op.substring]: language } });
+    }
+    if (yogaFor) {
+      condition.push({ yogaFor: { [Op.substring]: yogaFor } });
     }
     if (isPersonal) {
       if (isPersonal == "true") {
@@ -306,7 +311,7 @@ exports.getHomeTutorForUser = async (req, res) => {
     // Location
     if (latitude && longitude) {
       const unit = "km"; // km for kilometer m for mile
-      const distance = 20;
+      const distance = distance || 2;
       const totalLocation = await HTServiceArea.scope({
         method: [
           "distance",
@@ -424,70 +429,67 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
   try {
     const { page, limit, latitude, longitude, distanceUnit, areaDistance } =
       req.query;
-    if (!latitude && !longitude) {
+    if (!latitude || !longitude) {
       return res.status(400).send({
         success: false,
         message: "Location is required!",
       });
     }
-    const unit = distanceUnit ? distanceUnit : "km"; // km for kilometer m for mile
-    const distance = areaDistance ? areaDistance : 2;
-    // Pagination
+    const unit = distanceUnit || "km"; // km for kilometer m for mile
+    const distance = areaDistance || 2;
     const recordLimit = parseInt(limit) || 10;
-    let offSet = 0;
-    let currentPage = 1;
-    if (page) {
-      offSet = (parseInt(page) - 1) * recordLimit;
-      currentPage = parseInt(page);
-    }
+    let currentPage = parseInt(page) || 1;
+    let offSet = (currentPage - 1) * recordLimit;
+
     // Count All Areas
-    const totalAreas = await HTServiceArea.scope({
-      method: ["distance", latitude, longitude, distance, unit],
-    }).findAll({
-      attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
-      order: db.sequelize.col("distance"),
-    });
-    // Find Areas
-    const areas = await HTServiceArea.scope({
-      method: ["distance", latitude, longitude, distance, unit],
-    }).findAll({
-      attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
-      order: db.sequelize.col("distance"),
-      limit: recordLimit,
-      offset: offSet,
-      include: [
-        {
-          model: HomeTutor,
-          as: "homeTutors",
-          where: { approvalStatusByAdmin: "Approved", deletedThrough: null },
-          attributes: [
-            "id",
-            "homeTutorName",
-            "isGroupSO",
-            "isPrivateSO",
-            "yogaFor",
-            "instructorId",
-            "privateSessionPrice_Day",
-            "privateSessionPrice_Month",
-            "groupSessionPrice_Day",
-            "groupSessionPrice_Month",
-            "approvalStatusByAdmin",
-            "createdAt",
-          ],
-          include: [
-            {
-              model: HTutorImages,
-              as: "images",
-              where: {
-                deletedThrough: null,
+    const [totalAreas, areas] = await Promise.all([
+      HTServiceArea.scope({
+        method: ["distance", latitude, longitude, distance, unit],
+      }).findAll({
+        attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
+        order: db.sequelize.col("distance"),
+      }),
+      HTServiceArea.scope({
+        method: ["distance", latitude, longitude, distance, unit],
+      }).findAll({
+        attributes: ["id", "locationName", "latitude", "longitude", "pincode"],
+        order: db.sequelize.col("distance"),
+        limit: recordLimit,
+        offset: offSet,
+        include: [
+          {
+            model: HomeTutor,
+            as: "homeTutors",
+            where: { approvalStatusByAdmin: "Approved", deletedThrough: null },
+            attributes: [
+              "id",
+              "homeTutorName",
+              "isGroupSO",
+              "isPrivateSO",
+              "yogaFor",
+              "instructorId",
+              "privateSessionPrice_Day",
+              "privateSessionPrice_Month",
+              "groupSessionPrice_Day",
+              "groupSessionPrice_Month",
+              "approvalStatusByAdmin",
+              "createdAt",
+            ],
+            include: [
+              {
+                model: HTutorImages,
+                as: "images",
+                where: {
+                  deletedThrough: null,
+                },
+                attributes: ["path"],
+                required: false,
               },
-              attributes: ["path"],
-              required: false,
-            },
-          ],
-        },
-      ],
-    });
+            ],
+          },
+        ],
+      }),
+    ]);
     const transFormData = [];
     for (let i = 0; i < areas.length; i++) {
       const experiences = await InstructorExperience.findAll({
@@ -1013,7 +1015,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     const tutorId = [];
     if (latitude && longitude) {
       const unit = "km"; // km for kilometer m for mile
-      const distance = 20;
+      const distance = 2;
       const totalLocation = await HTServiceArea.scope({
         method: [
           "distance",
