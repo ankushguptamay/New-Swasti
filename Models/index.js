@@ -347,13 +347,4 @@ db.hTServiceArea.addScope(
 //     }
 // }).catch((err) => { console.log(err) });
 
-queryInterface
-  .addColumn("userAddresses", "addressType", { type: DataTypes.STRING })
-  .then((res) => {
-    console.log("added!");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-
 module.exports = db;
