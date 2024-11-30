@@ -259,7 +259,8 @@ exports.getHomeTutorForUser = async (req, res) => {
       latitude,
       longitude,
       experience,
-      distance,
+      unit = "km",
+      distance = 2,
       yogaFor,
     } = req.query;
     // Pagination
@@ -310,8 +311,6 @@ exports.getHomeTutorForUser = async (req, res) => {
     }
     // Location
     if (latitude && longitude) {
-      const unit = "km"; // km for kilometer m for mile
-      const distance = distance || 2;
       const totalLocation = await HTServiceArea.scope({
         method: [
           "distance",
@@ -332,7 +331,7 @@ exports.getHomeTutorForUser = async (req, res) => {
       });
       const tutorId = [];
       for (let i = 0; i < totalLocation.length; i++) {
-        tutorId.push(totalLocation.homeTutorId);
+        tutorId.push(totalLocation[i].homeTutorId);
       }
       condition.push({ id: tutorId });
     }
@@ -427,16 +426,20 @@ exports.getHomeTutorForUser = async (req, res) => {
 
 exports.getNearestHomeTutorForUser = async (req, res) => {
   try {
-    const { page, limit, latitude, longitude, distanceUnit, areaDistance } =
-      req.query;
+    const {
+      page,
+      limit,
+      latitude,
+      longitude,
+      unit = "km",
+      distance = 2,
+    } = req.query;
     if (!latitude || !longitude) {
       return res.status(400).send({
         success: false,
         message: "Location is required!",
       });
     }
-    const unit = distanceUnit || "km"; // km for kilometer m for mile
-    const distance = areaDistance || 2;
     const recordLimit = parseInt(limit) || 10;
     let currentPage = parseInt(page) || 1;
     let offSet = (currentPage - 1) * recordLimit;
@@ -968,6 +971,8 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
       latitude,
       longitude,
       isMorning,
+      distance = 2,
+      unit = "km",
     } = req.query;
 
     // Pagination
@@ -1014,8 +1019,6 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     // Location is mendatory
     const tutorId = [];
     if (latitude && longitude) {
-      const unit = "km"; // km for kilometer m for mile
-      const distance = 2;
       const totalLocation = await HTServiceArea.scope({
         method: [
           "distance",
@@ -1029,7 +1032,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         order: db.sequelize.col("distance"),
       });
       for (let i = 0; i < totalLocation.length; i++) {
-        tutorId.push(totalLocation.homeTutorId);
+        tutorId.push(totalLocation[i].homeTutorId);
       }
       condition.push({ id: tutorId });
     } else {
