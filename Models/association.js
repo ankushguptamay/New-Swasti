@@ -1,0 +1,4 @@
+exports.associations = (db) => {
+
+  };
+  

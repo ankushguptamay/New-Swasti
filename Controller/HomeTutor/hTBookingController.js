@@ -4,7 +4,7 @@ const {
 } = require("../../Middleware/Validate/validateHomeTutor");
 const HTServiceArea = db.hTServiceArea;
 const HTBooking = db.hTBooking;
-const UserHTSlote = db.userHTSlote;
+const HTPayment = db.hTPayment;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutor = db.homeTutor;
 const { RAZORPAY_KEY_ID, RAZORPAY_SECRET_ID } = process.env;
@@ -30,12 +30,12 @@ exports.createHTOrder = async (req, res) => {
       currency,
       receipt,
       couponCode,
-      timeSloteId,
-      userPreferedLanguage,
+      hTSlotIds,
     } = req.body; // receipt is id created for this order
     const userId = req.user.id;
+
     const timeSlote = await HTTimeSlot.findOne({
-      where: { id: timeSloteId, appointmentStatus: "Active", isBooked: false },
+      where: { id: hTSlotIds, appointmentStatus: "Active", isBooked: false },
     });
     if (!timeSlote) {
       return res.status(400).send({
@@ -43,61 +43,54 @@ exports.createHTOrder = async (req, res) => {
         message: "This slote is not present or can not be book!",
       });
     }
-    // 3 days validity
-    const date = timeSlote.date;
-    // const date1 = JSON.stringify(new Date());
-    // const date2 = JSON.stringify(new Date((new Date).getTime() + (1 * 24 * 60 * 60 * 1000)));
-    // const date3 = JSON.stringify(new Date((new Date).getTime() + (2 * 24 * 60 * 60 * 1000)));
-    // const array = [`${date1.slice(1, 11)}`, `${date2.slice(1, 11)}`, `${date3.slice(1, 11)}`]
-    // if (array.indexOf(date) === -1) {
-    //     return res.status(400).send({
-    //         success: false,
-    //         message: "Can't book more then three days slote!"
 
-    //     });
-    // }
     // Validate date
-    const yesterday = new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000);
-    const bookingDate = new Date(date).getTime();
-    if (bookingDate <= yesterday) {
+    // Check is date have been passed
+    const today = new Date();
+    today.setMinutes(today.getMinutes() + 390); // 5.5 hours and 1 hours, user should book a slot 1 hour ahead of slot time
+    const date = `${timeSlote.date.toISOString().slice(0, 10)}T${
+      timeSlote.time
+    }:00.000Z`;
+    const inMiliSecond = new Date(date).getTime();
+    if (inMiliSecond <= today.getTime()) {
       return res.status(400).send({
         success: false,
-        message: "Can't book this slote!",
+        message: `Booking Unavailable, Bookings need to be made at least 1 hour in advance!`,
       });
     }
+
     let noOfBooking = req.body.noOfBooking;
-    // Number
-    if (timeSlote.serviceType === "Private") {
-      noOfBooking = 1;
-    }
-    // Group class validation
-    if (timeSlote.serviceType === "Group") {
-      const findBooked = await HTBooking.findAll({
-        where: {
-          timeSloteId: timeSloteId,
-          status: "Paid",
-          verify: true,
-        },
-      });
-      if (findBooked.length >= parseInt(timeSlote.noOfPeople)) {
-        return res.status(400).send({
-          success: false,
-          message: "This group class is already full! Please try another!",
+    if (bookingType === "daily") {
+      // Number
+      if (timeSlote.serviceType === "Private") {
+        noOfBooking = 1;
+      }
+      // Group class validation
+      if (timeSlote.serviceType === "Group") {
+        const findBooked = await HTPayment.findAll({
+          where: {
+            hTSlotIds: hTSlotIds,
+            status: "Paid",
+            verify: true,
+          },
         });
+        if (findBooked.length >= parseInt(timeSlote.noOfPeople)) {
+          return res.status(400).send({
+            success: false,
+            message: "This group class is already full! Please try another!",
+          });
+        }
       }
     }
-    await timeSlote.update({
-      ...timeSlote,
-      userPreferedLanguage: userPreferedLanguage,
-    });
+
     // initiate payment
     razorpayInstance.orders.create(
       { amount, currency, receipt },
       (err, order) => {
         if (!err) {
-          HTBooking.create({
+          HTPayment.create({
             noOfBooking: noOfBooking,
-            timeSloteId: timeSloteId,
+            hTSlotIds: hTSlotIds,
             homeTutorId: timeSlote.homeTutorId,
             userId: userId,
             amount: amount / 100,

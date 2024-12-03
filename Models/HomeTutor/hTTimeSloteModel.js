@@ -7,15 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      date: {
-        type: DataTypes.DATEONLY,
-      },
-      time: {
-        type: DataTypes.STRING,
-      },
-      timeDurationInMin: {
-        type: DataTypes.INTEGER,
-      },
+      date: { type: DataTypes.DATEONLY },
+      time: { type: DataTypes.STRING },
+      timeDurationInMin: { type: DataTypes.INTEGER },
       isBooked: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -28,19 +22,19 @@ module.exports = (sequelize, DataTypes) => {
         },
         defaultValue: "Private",
       },
+      durationType: {
+        type: DataTypes.STRING,
+        validate: {
+          isIn: [["monthly 25", "weekly 6", "monthly 30", "weekly 7", "daily"]],
+        },
+        defaultValue: "daily",
+      },
       noOfPeople: {
         type: DataTypes.INTEGER,
         defaultValue: 1,
       },
-      password: {
-        type: DataTypes.INTEGER,
-      },
-      sloteCode: {
-        type: DataTypes.STRING,
-      },
-      userPreferedLanguage: {
-        type: DataTypes.STRING,
-      },
+      password: { type: DataTypes.INTEGER },
+      sloteCode: { type: DataTypes.STRING },
       appointmentStatus: {
         type: DataTypes.STRING,
         validate: {
@@ -54,6 +48,15 @@ module.exports = (sequelize, DataTypes) => {
           isIn: [["Admin", "Instructor", "ByUpdation"]],
         },
       },
+      priceId: {
+        type: DataTypes.UUID,
+        references: {
+          model: "hTPrices",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
+      },
     },
     {
       paranoid: true,
@@ -62,5 +65,6 @@ module.exports = (sequelize, DataTypes) => {
   return HTTimeSlot;
 };
 
-// instructorId
 // homeTutorId
+// serviceAreaId
+// priceId

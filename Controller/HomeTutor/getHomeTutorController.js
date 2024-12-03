@@ -10,6 +10,7 @@ const HomeTutorHistory = db.homeTutorHistory;
 const HTutorImages = db.hTImage;
 const UserNotification = db.userNotification;
 const InstructorExperience = db.instructorExperience;
+const HTPrice = db.hTPrice;
 
 exports.getMyHomeTutorForInstructor = async (req, res) => {
   try {
@@ -27,6 +28,16 @@ exports.getMyHomeTutorForInstructor = async (req, res) => {
           where: {
             deletedThrough: null,
           },
+          attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+          required: false,
+        },
+        {
+          model: HTPrice,
+          as: "hTPrices",
+          where: {
+            deletedThrough: null,
+          },
+          attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
           required: false,
         },
         {
@@ -36,7 +47,9 @@ exports.getMyHomeTutorForInstructor = async (req, res) => {
             deletedThrough: null,
             date: todayDate,
           },
-          attributes: { exclude: ["password"] },
+          attributes: {
+            exclude: ["password", "createdAt", "updatedAt", "deletedThrough"],
+          },
           required: false,
         },
         {
@@ -64,7 +77,11 @@ exports.getMyHomeTutorForInstructor = async (req, res) => {
           language.length > 0 &&
           homeTutor[i].instructorBio
         ) {
-          if (serviceAreas.length > 0 && images.length > 0) {
+          if (
+            serviceAreas.length > 0 &&
+            images.length > 0 &&
+            homeTutor[i].hTPrices.length > 0
+          ) {
             // Submit for approval
             await homeTutor[i].update({
               ...homeTutor[i],
@@ -148,12 +165,38 @@ exports.getHTServiceAreaByHTId = async (req, res) => {
         homeTutorId: req.params.id,
         deletedThrough: null,
       },
+      attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+      raw: true,
     });
     // Final Response
     res.status(200).send({
       success: true,
       message: "HT service area fetched successfully!",
       data: hTServiceArea,
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.getHTPriceByHTId = async (req, res) => {
+  try {
+    const hTPrice = await HTPrice.findAll({
+      where: {
+        homeTutorId: req.params.id,
+        deletedThrough: null,
+      },
+      attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+      raw: true,
+    });
+    // Final Response
+    res.status(200).send({
+      success: true,
+      message: "HT Price fetched successfully!",
+      data: hTPrice,
     });
   } catch (err) {
     res.status(500).send({
@@ -180,6 +223,16 @@ exports.getHomeTutorById = async (req, res) => {
           where: {
             deletedThrough: null,
           },
+          attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+          required: false,
+        },
+        {
+          model: HTPrice,
+          as: "hTPrices",
+          where: {
+            deletedThrough: null,
+          },
+          attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
           required: false,
         },
         {
@@ -189,7 +242,9 @@ exports.getHomeTutorById = async (req, res) => {
             deletedThrough: null,
             date: todayDate,
           },
-          attributes: { exclude: ["password"] },
+          attributes: {
+            exclude: ["password", "createdAt", "updatedAt", "deletedThrough"],
+          },
           required: false,
         },
         {
@@ -253,8 +308,6 @@ exports.getHomeTutorForUser = async (req, res) => {
       price,
       isPersonal,
       isGroup,
-      perDay,
-      monthly,
       language,
       latitude,
       longitude,
@@ -279,8 +332,12 @@ exports.getHomeTutorForUser = async (req, res) => {
       });
     }
     // Filter
-    if (language) {
-      condition.push({ language: { [Op.substring]: language } });
+    if (language && language.length > 0) {
+      const languageCondition = [];
+      for (const lang of language) {
+        languageCondition.push({ language: { [Op.substring]: lang } });
+      }
+      condition.push({ [Op.or]: languageCondition });
     }
     if (yogaFor) {
       condition.push({ yogaFor: { [Op.substring]: yogaFor } });
@@ -299,17 +356,25 @@ exports.getHomeTutorForUser = async (req, res) => {
         condition.push({ isGroupSO: false });
       }
     }
+    // Price
+    let priceTutor = {};
     if (price) {
-      condition.push({
-        [Op.or]: [
-          { privateSessionPrice_Day: { [Op.lte]: parseFloat(price) } },
-          { privateSessionPrice_Month: { [Op.lte]: parseFloat(price) } },
-          { groupSessionPrice_Day: { [Op.lte]: parseFloat(price) } },
-          { groupSessionPrice_Month: { [Op.lte]: parseFloat(price) } },
-        ],
-      });
+      priceTutor = {
+        model: HTPrice,
+        as: "hTPrices",
+        where: {
+          deletedThrough: null,
+          [Op.or]: [
+            { private_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
+            { group_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
+          ],
+        },
+        attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+        required: true,
+      };
     }
     // Location
+    const areaTutorId = [];
     if (latitude && longitude) {
       const totalLocation = await HTServiceArea.scope({
         method: [
@@ -320,21 +385,15 @@ exports.getHomeTutorForUser = async (req, res) => {
           unit,
         ],
       }).findAll({
-        attributes: [
-          "id",
-          "locationName",
-          "latitude",
-          "longitude",
-          "homeTutorId",
-        ],
+        attributes: ["id", "homeTutorId"],
         order: db.sequelize.col("distance"),
       });
-      const tutorId = [];
       for (let i = 0; i < totalLocation.length; i++) {
-        tutorId.push(totalLocation[i].homeTutorId);
+        areaTutorId.push(totalLocation[i].homeTutorId);
       }
-      condition.push({ id: tutorId });
+      condition.push({ id: areaTutorId });
     }
+
     // Count All Home Tutor
     const totalTutor = await HomeTutor.count({
       where: {
@@ -351,10 +410,6 @@ exports.getHomeTutorForUser = async (req, res) => {
         "isPrivateSO",
         "yogaFor",
         "instructorId",
-        "privateSessionPrice_Day",
-        "privateSessionPrice_Month",
-        "groupSessionPrice_Day",
-        "groupSessionPrice_Month",
         "approvalStatusByAdmin",
         "createdAt",
       ],
@@ -371,6 +426,7 @@ exports.getHomeTutorForUser = async (req, res) => {
           attributes: ["path"],
           required: false,
         },
+        priceTutor,
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -471,10 +527,6 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
               "isPrivateSO",
               "yogaFor",
               "instructorId",
-              "privateSessionPrice_Day",
-              "privateSessionPrice_Month",
-              "groupSessionPrice_Day",
-              "groupSessionPrice_Month",
               "approvalStatusByAdmin",
               "createdAt",
             ],
@@ -486,6 +538,17 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
                   deletedThrough: null,
                 },
                 attributes: ["path"],
+                required: false,
+              },
+              {
+                model: HTPrice,
+                as: "hTPrices",
+                where: {
+                  deletedThrough: null,
+                },
+                attributes: {
+                  exclude: ["createdAt", "updatedAt", "deletedThrough"],
+                },
                 required: false,
               },
             ],
@@ -507,6 +570,7 @@ exports.getNearestHomeTutorForUser = async (req, res) => {
         ...homeTutor,
         experiences: experiences.map((exp) => exp.get({ plain: true })),
         images: areas[i].dataValues.homeTutors.images,
+        hTPrices: areas[i].dataValues.homeTutors.hTPrices,
         serviceAreas: {
           id: areas[i].dataValues.id,
           locationName: areas[i].dataValues.locationName,
@@ -552,10 +616,6 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
           "isPrivateSO",
           "yogaFor",
           "instructorId",
-          "privateSessionPrice_Day",
-          "privateSessionPrice_Month",
-          "groupSessionPrice_Day",
-          "groupSessionPrice_Month",
           "approvalStatusByAdmin",
           "createdAt",
         ],
@@ -589,6 +649,17 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
               deletedThrough: null,
             },
             attributes: ["path"],
+            required: false,
+          },
+          {
+            model: HTPrice,
+            as: "hTPrices",
+            where: {
+              deletedThrough: null,
+            },
+            attributes: {
+              exclude: ["createdAt", "updatedAt", "deletedThrough"],
+            },
             required: false,
           },
         ],
@@ -668,6 +739,15 @@ exports.getHTTimeSloteForUser = async (req, res) => {
             "pincode",
           ],
         },
+        {
+          model: HTPrice,
+          as: "hTPrices",
+          where: {
+            deletedThrough: null,
+          },
+          attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+          required: false,
+        },
       ],
     });
     const homeTutor = await HomeTutor.findOne({ where: { id: req.params.id } });
@@ -698,19 +778,30 @@ exports.getHTTimeSlote = async (req, res) => {
         date: date,
       },
       attributes: { exclude: ["password"] },
-      include: {
-        model: HTServiceArea,
-        as: "serviceArea",
-        attributes: [
-          "id",
-          "locationName",
-          "latitude",
-          "radius",
-          "unit",
-          "longitude",
-          "pincode",
-        ],
-      },
+      include: [
+        {
+          model: HTServiceArea,
+          as: "serviceArea",
+          attributes: [
+            "id",
+            "locationName",
+            "latitude",
+            "radius",
+            "unit",
+            "longitude",
+            "pincode",
+          ],
+        },
+        {
+          model: HTPrice,
+          as: "hTPrices",
+          where: {
+            deletedThrough: null,
+          },
+          attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+          required: false,
+        },
+      ],
     });
     // Final Response
     res.status(200).send({
@@ -958,6 +1049,36 @@ exports.getUserNotification = async (req, res) => {
   }
 };
 
+exports.getDeletedHTPrice = async (req, res) => {
+  try {
+    const { deletedThrough } = req.query;
+    const condition = [
+      {
+        homeTutorId: req.params.id,
+        deletedAt: { [Op.ne]: null },
+      },
+    ];
+    if (deletedThrough) {
+      condition.push({ deletedThrough });
+    }
+    const price = await HTPrice.findAll({
+      where: { [Op.and]: condition },
+      paranoid: false,
+    });
+    // Final Response
+    res.status(200).send({
+      success: true,
+      message: "Deleted price fetched successfully!",
+      data: price,
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 exports.getHTMorningEveningTimeSlote = async (req, res) => {
   try {
     const {
@@ -973,6 +1094,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
       isMorning,
       distance = 2,
       unit = "km",
+      experience,
     } = req.query;
 
     // Pagination
@@ -989,8 +1111,12 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     ];
 
     // Filter
-    if (language) {
-      condition.push({ language: { [Op.substring]: language } });
+    if (language && typeof language === "object" && language.length > 0) {
+      const languageCondition = [];
+      for (const lang of language) {
+        languageCondition.push({ language: { [Op.substring]: lang } });
+      }
+      condition.push({ [Op.or]: languageCondition });
     }
     if (isPersonal) {
       if (isPersonal == "true") {
@@ -1006,18 +1132,8 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         condition.push({ isGroupSO: false });
       }
     }
-    if (price) {
-      condition.push({
-        [Op.or]: [
-          { privateSessionPrice_Day: { [Op.lte]: parseFloat(price) } },
-          { privateSessionPrice_Month: { [Op.lte]: parseFloat(price) } },
-          { groupSessionPrice_Day: { [Op.lte]: parseFloat(price) } },
-          { groupSessionPrice_Month: { [Op.lte]: parseFloat(price) } },
-        ],
-      });
-    }
     // Location is mendatory
-    const tutorId = [];
+    const areaTutorId = [];
     if (latitude && longitude) {
       const totalLocation = await HTServiceArea.scope({
         method: [
@@ -1032,14 +1148,32 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         order: db.sequelize.col("distance"),
       });
       for (let i = 0; i < totalLocation.length; i++) {
-        tutorId.push(totalLocation[i].homeTutorId);
+        areaTutorId.push(totalLocation[i].homeTutorId);
       }
-      condition.push({ id: tutorId });
+      condition.push({ id: areaTutorId });
     } else {
       res.status(400).send({
         success: false,
         message: "Your location is required!",
       });
+    }
+
+    // Price
+    let priceCondition = {};
+    if (price) {
+      priceCondition = {
+        model: HTPrice,
+        as: "hTPrices",
+        where: {
+          deletedThrough: null,
+          [Op.or]: [
+            { private_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
+            { group_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
+          ],
+        },
+        attributes: ["id", "homeTutorId"],
+        required: true,
+      };
     }
 
     const slotCondition = [
@@ -1051,6 +1185,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     const homeTutor = await HomeTutor.findAll({
       where: { [Op.and]: condition },
       attributes: ["id"],
+      include: [priceCondition],
     });
     const finalHomeTutorIds = [];
     for (let i = 0; i < homeTutor.length; i++) {

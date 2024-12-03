@@ -9,10 +9,6 @@ exports.homeTutorValidation = (data) => {
     isPrivateSO: joi.boolean().required(),
     isGroupSO: joi.boolean().required(),
     language: joi.array().required(),
-    privateSessionPrice_Day: joi.string().optional(),
-    privateSessionPrice_Month: joi.string().optional(),
-    groupSessionPrice_Day: joi.string().optional(),
-    groupSessionPrice_Month: joi.string().optional(),
     specilization: joi.array().required(),
     instructorBio: joi.string().required(),
   }); // .options({ allowUnknown: true });
@@ -41,12 +37,33 @@ exports.hTutorTimeSloteValidation = (data) => {
     serviceAreaId: joi.string().optional(),
     newServiceArea: joi.object().optional(),
     noOfPeople: joi.number().required(),
+    priceId: joi.string().optional(),
+    newPrice: joi
+      .object({
+        arg: joi
+          .string()
+          .valid(
+            "priceName",
+            "durationType",
+            "private_PricePerDayPerRerson",
+            "group_PricePerDayPerRerson"
+          ),
+        value: joi.string(),
+      })
+      .pattern(/priceName/, joi.string().required())
+      .pattern(
+        /durationType/,
+        joi
+          .string()
+          .valid("monthly 25", "weekly 6", "monthly 30", "weekly 7", "daily")
+          .required()
+      )
+      .pattern(/private_PricePerDayPerRerson/, joi.string())
+      .pattern(/group_PricePerDayPerRerson/, joi.string())
+      .optional(),
   }); // .options({ allowUnknown: true });
   return schema.validate(data);
 };
-
-// data:{"startTime":["11:00PM","12:00PM"],"startDate":"2024-09-07","endDate":"2024-09-12","timeDurationInMin":60,
-//   "serviceType":"Group","newServiceArea":{"locationName":"Delhi","latitude":"389077489","longitude":"13213231","radius":3,"unit":"m"},"noOfPeople":5}
 
 exports.bookHTValidation = (data) => {
   const schema = joi.object().keys({
@@ -55,8 +72,7 @@ exports.bookHTValidation = (data) => {
     receipt: joi.string().required(),
     couponCode: joi.string().optional(),
     timeSloteId: joi.string().required(),
-    noOfBooking: joi.string().required(),
-    userPreferedLanguage: joi.string().required(),
+    noOfBooking: joi.string().required()
   });
   return schema.validate(data);
 };
@@ -74,7 +90,22 @@ exports.getHomeTutorForUserValidation = (data) => {
       page: joi.number().optional(),
       limit: joi.number().optional(),
       search: joi.string().optional(),
+      distance: joi.number().optional(),
+      yogaForh: joi.string().optional(),
     })
     .options({ allowUnknown: true });
+  return schema.validate(data);
+};
+
+exports.hTutorPriceValidation = (data) => {
+  const schema = joi.object().keys({
+    priceName: joi.string().required(),
+    private_PricePerDayPerRerson: joi.string().required(),
+    group_PricePerDayPerRerson: joi.string().required(),
+    durationType: joi
+      .string()
+      .valid("monthly 25", "weekly 6", "monthly 30", "weekly 7", "daily")
+      .required(),
+  });
   return schema.validate(data);
 };

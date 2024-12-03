@@ -6,7 +6,6 @@ const {
 } = require("../../Middleware/Validate/validateUser");
 const User = db.user;
 const HomeTutor = db.homeTutor;
-const HTServiceArea = db.hTServiceArea;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutorHistory = db.homeTutorHistory;
 const UserNotification = db.userNotification;
@@ -148,10 +147,6 @@ exports.changeHTutorUpdationStatus = async (req, res) => {
         isGroupSO: history.isGroupSO,
         isPrivateSO: history.isPrivateSO,
         language: history.language,
-        privateSessionPrice_Day: history.privateSessionPrice_Day,
-        privateSessionPrice_Month: history.privateSessionPrice_Month,
-        groupSessionPrice_Day: history.groupSessionPrice_Day,
-        groupSessionPrice_Month: history.groupSessionPrice_Month,
         specilization: history.specilization,
         instructorBio: history.instructorBio,
       });

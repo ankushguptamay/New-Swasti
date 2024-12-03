@@ -3,12 +3,12 @@ const { Op } = require("sequelize");
 const {
   homeTutorValidation,
   hTutorLocationValidation,
+  hTutorPriceValidation,
 } = require("../../Middleware/Validate/validateHomeTutor");
 const HomeTutor = db.homeTutor;
 const HTServiceArea = db.hTServiceArea;
-const HTTimeSlot = db.hTTimeSlote;
+const HTPrice = db.hTPrice;
 const HomeTutorHistory = db.homeTutorHistory;
-const HTutorImages = db.hTImage;
 
 exports.updateHomeTutor = async (req, res) => {
   try {
@@ -23,38 +23,10 @@ exports.updateHomeTutor = async (req, res) => {
       language,
       yogaFor,
       homeTutorName,
-      privateSessionPrice_Day,
-      privateSessionPrice_Month,
-      groupSessionPrice_Day,
-      groupSessionPrice_Month,
       specilization,
       instructorBio,
     } = req.body;
-    // Validate price with there offer
-    if (isGroupSO === true) {
-      if (groupSessionPrice_Day && groupSessionPrice_Month) {
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "Please enter required group class price!",
-        });
-      }
-    }
-    if (isPrivateSO === true) {
-      if (privateSessionPrice_Day && privateSessionPrice_Month) {
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "Please enter required individual class price!",
-        });
-      }
-    }
-    if (!isPrivateSO && !isGroupSO) {
-      return res.status(400).send({
-        success: false,
-        message: "Please select atleast one service offered!",
-      });
-    }
+
     // Find in database
     const homeTutor = await HomeTutor.findOne({
       where: {
@@ -79,10 +51,6 @@ exports.updateHomeTutor = async (req, res) => {
         isPrivateSO: isPrivateSO,
         isGroupSO: isGroupSO,
         language: language,
-        privateSessionPrice_Day: privateSessionPrice_Day,
-        privateSessionPrice_Month: privateSessionPrice_Month,
-        groupSessionPrice_Day: groupSessionPrice_Day,
-        groupSessionPrice_Month: groupSessionPrice_Month,
         specilization: specilization,
         instructorBio: instructorBio,
       });
@@ -101,10 +69,6 @@ exports.updateHomeTutor = async (req, res) => {
         isPrivateSO: isPrivateSO,
         isGroupSO: isGroupSO,
         language: language,
-        privateSessionPrice_Day: privateSessionPrice_Day,
-        privateSessionPrice_Month: privateSessionPrice_Month,
-        groupSessionPrice_Day: groupSessionPrice_Day,
-        groupSessionPrice_Month: groupSessionPrice_Month,
         specilization: specilization,
         instructorBio: instructorBio,
         homeTutorId: homeTutor.id,
@@ -138,8 +102,22 @@ exports.updateHTServiceArea = async (req, res) => {
     }
     const { locationName, latitude, longitude, radius, unit } = req.body;
     // Find Home Tutor service area In Database
+    const id = req.params.id;
     const area = await HTServiceArea.findOne({
-      where: { id: req.params.id },
+      where: { id, deletedThrough: null },
+      include: [
+        {
+          model: HomeTutor,
+          as: "homeTutors",
+          attributes: [
+            "id",
+            "approvalStatusByAdmin",
+            "isPrivateSO",
+            "isGroupSO",
+          ],
+          required: true,
+        },
+      ],
     });
     if (!area) {
       return res.status(400).send({
@@ -147,22 +125,105 @@ exports.updateHTServiceArea = async (req, res) => {
         message: "Home tutor area is not present!",
       });
     }
-    await area.update({ deletedThrough: "ByUpdation" });
-    // Create New One
-    await HTServiceArea.create({
-      locationName: locationName,
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
-      radius: radius,
-      unit: unit,
-      homeTutorId: area.homeTutorId,
-    });
-    // Soft Delete Previous
-    await area.destroy();
+  
+    if (area.dataValues.homeTutors.approvalStatusByAdmin === "Approved") {
+      await area.update({ deletedThrough: "ByUpdation" });
+      await area.destroy();
+      // Create New One
+      await HTServiceArea.create({
+        locationName: locationName,
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        radius: radius,
+        unit: unit,
+        homeTutorId: area.dataValues.homeTutorId,
+      });
+    } else {
+      await area.update({
+        locationName: locationName,
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        radius: radius,
+        unit: unit,
+      });
+    }
     // Final Response
     res.status(200).send({
       success: true,
       message: "Home tutor area updated successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.updateHTPrice = async (req, res) => {
+  try {
+    // Validate Body
+    const { error } = hTutorPriceValidation(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
+    }
+    const { priceName, durationType } = req.body;
+    // Find Home Tutor Price In Database
+    const id = req.params.id;
+    const price = await HTPrice.findOne({
+      where: { id, deletedThrough: null },
+      include: [
+        {
+          model: HomeTutor,
+          as: "homeTutors",
+          attributes: [
+            "id",
+            "approvalStatusByAdmin",
+            "isPrivateSO",
+            "isGroupSO",
+          ],
+          required: true,
+        },
+      ],
+    });
+    if (!price) {
+      return res.status(400).send({
+        success: false,
+        message: "Home tutor price is not present!",
+      });
+    }
+
+    // Check is hometutor execpted required condition
+    const private_PricePerDayPerRerson = price.dataValues.homeTutors.isPrivateSO
+      ? req.body.private_PricePerDayPerRerson
+      : null;
+    const group_PricePerDayPerRerson = price.dataValues.homeTutors.isGroupSO
+      ? req.body.group_PricePerDayPerRerson
+      : null;
+
+    if (price.dataValues.homeTutors.approvalStatusByAdmin === "Approved") {
+      await price.update({ deletedThrough: "ByUpdation" });
+      await price.destroy();
+      // Create New One
+      await HTPrice.create({
+        priceName,
+        private_PricePerDayPerRerson,
+        group_PricePerDayPerRerson,
+        durationType,
+        homeTutorId: price.dataValues.homeTutorId,
+      });
+    } else {
+      await price.update({
+        priceName,
+        private_PricePerDayPerRerson,
+        group_PricePerDayPerRerson,
+        durationType,
+      });
+    }
+    // Final Response
+    res.status(200).send({
+      success: true,
+      message: "Home tutor price updated successfully!",
     });
   } catch (err) {
     res.status(500).send({

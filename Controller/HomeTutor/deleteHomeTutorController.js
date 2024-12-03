@@ -5,6 +5,7 @@ const HTServiceArea = db.hTServiceArea;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutorHistory = db.homeTutorHistory;
 const HTutorImages = db.hTImage;
+const HTPrice = db.hTPrice;
 const { deleteFileToBunny } = require("../../Util/bunny");
 
 // Hard delete api is not make becasuse of payment
@@ -30,9 +31,7 @@ exports.softDeleteHomeTutor = async (req, res) => {
       });
     }
     // Find Home Tutor In Database
-    const tutor = await HomeTutor.findOne({
-      where: condition,
-    });
+    const tutor = await HomeTutor.findOne({ where: condition, raw: true });
     if (!tutor) {
       return res.status(400).send({
         success: false,
@@ -71,6 +70,7 @@ exports.softDeleteHTutorServiceArea = async (req, res) => {
     // Find Home Tutor service area In Database
     const area = await HTServiceArea.findOne({
       where: { id: req.params.id },
+      raw: true,
     });
     if (!area) {
       return res.status(400).send({
@@ -134,6 +134,7 @@ exports.softDeleteHTutorImage = async (req, res) => {
     // Find Home Tutor images In Database
     const images = await HTutorImages.findOne({
       where: { id: req.params.id },
+      raw: true,
     });
     if (!images) {
       return res.status(400).send({
@@ -258,6 +259,70 @@ exports.hardDeleteHomeTutor = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Home tutor hard deleted successfully!",
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.softDeleteHTutorPrice = async (req, res) => {
+  try {
+    let deletedThrough;
+    if (req.user) {
+      deletedThrough = "Instructor";
+    } else if (req.admin) {
+      deletedThrough = "Admin";
+    } else {
+      return res.status(400).send({
+        success: false,
+        message: "You can not delete this home tutor!",
+      });
+    }
+    // Find Home Tutor price In Database
+    const price = await HTPrice.findOne({
+      where: { id: req.params.id },
+      raw: true,
+    });
+    if (!price) {
+      return res.status(400).send({
+        success: false,
+        message: "Home tutor price is not present!",
+      });
+    }
+    // Find All price
+    const totalPrice = await HTPrice.count({
+      where: { homeTutorId: price.homeTutorId },
+    });
+    if (parseInt(totalPrice) <= 1) {
+      return res.status(400).send({
+        success: false,
+        message: "There should be at least one price chart present!",
+      });
+    }
+    // Check is any timeSlote active and status booked
+    const isSlote = await HTTimeSlot.findOne({
+      where: {
+        appointmentStatus: "Active",
+        priceId: req.params.id,
+        isBooked: true,
+      },
+    });
+    if (isSlote) {
+      return res.status(400).send({
+        success: false,
+        message: "There is an active booking pending on this price!",
+      });
+    }
+    await price.update({ deletedThrough: deletedThrough });
+    // Soft Delete
+    await price.destroy();
+    // Final Response
+    res.status(200).send({
+      success: true,
+      message: "Home tutor price deleted successfully!",
     });
   } catch (err) {
     res.status(500).send({

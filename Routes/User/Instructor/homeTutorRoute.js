@@ -5,6 +5,7 @@ const {
   addHTutorSeviceArea,
   addHTutorTimeSlote,
   addHTutorImage,
+  addHTutorPrice,
 } = require("../../../Controller/HomeTutor/createHomeTutorController");
 const {
   getHTAverageRating,
@@ -18,6 +19,7 @@ const {
   getHTTimeSlote,
   getUserNotification,
   getHTServiceAreaByHTId,
+  getHTPriceByHTId,
 } = require("../../../Controller/HomeTutor/getHomeTutorController");
 const {
   changeHTTimeSloteStatus,
@@ -64,6 +66,7 @@ instructor.delete("/updateHTReview/:id", updateHTReview); //id = review Id
 instructor.post("/createHomeTutor", createHomeTutor);
 instructor.post("/addHTutorSeviceArea/:id", addHTutorSeviceArea);
 instructor.post("/addHTutorTimeSlote/:id", addHTutorTimeSlote);
+instructor.post("/addHTutorPrice/:id", addHTutorPrice);
 instructor.post(
   "/addHTutorImage/:id",
   uploadImage.array("hTutorImages", 3),
@@ -76,6 +79,7 @@ instructor.get("/hTTimeSlote/:id", getHTTimeSlote);
 
 instructor.get("/userNotifications", getUserNotification);
 instructor.get("/hTServiceArea/:id", getHTServiceAreaByHTId);
+instructor.get("/hTPrice/:id", getHTPriceByHTId);
 instructor.put("/viewUserNotifications", viewUserNotifications);
 
 instructor.get("/myHTBookedSlotes", getMyHTBookedSloteForInstructor);

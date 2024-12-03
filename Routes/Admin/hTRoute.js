@@ -7,6 +7,7 @@ const {
   getAllDeletedHT,
   getDeletedHTImages,
   getDeletedHTServiceArea,
+  getDeletedHTPrice,
   getDeletedHTTimeSlotes,
 } = require("../../Controller/HomeTutor/getHomeTutorController");
 const {
@@ -56,6 +57,7 @@ admin.get("/hTTimeSlote/:id", getHTTimeSlote);
 admin.get("/getAllDeletedHT", getAllDeletedHT);
 admin.get("/getDeletedHTImages/:id", getDeletedHTImages); //id = homeTutorId
 admin.get("/getDeletedHTServiceArea/:id", getDeletedHTServiceArea); //id = homeTutorId
+admin.get("/getDeletedHTPrice/:id", getDeletedHTPrice); //id = homeTutorId
 admin.get("/getDeletedHTTimeSlotes/:id", getDeletedHTTimeSlotes); //id = homeTutorId
 
 admin.put("/changeHomeTutorStatus/:id", changeHomeTutorStatus);

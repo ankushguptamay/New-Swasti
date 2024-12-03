@@ -1,6 +1,7 @@
 const dbConfig = require("../Config/db.Config.js");
 
 const { Sequelize, DataTypes } = require("sequelize");
+const { changeInData } = require("./qreryInterface.js");
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.user,
@@ -121,29 +122,29 @@ db.hTTimeSlote = require("./HomeTutor/hTTimeSloteModel.js")(
   sequelize,
   Sequelize
 );
-db.userHTSlote = require("./HomeTutor/sloteUserJunctionModel.js")(
-  sequelize,
-  Sequelize
-);
+
+db.hTPrice = require("./HomeTutor/hTPriceModel.js")(sequelize, Sequelize);
+db.hTPayment = require("./HomeTutor/hTPaymentModel.js")(sequelize, Sequelize);
 db.hTImage = require("./HomeTutor/hTImageModel.js")(sequelize, Sequelize);
 db.homeTutorHistory = require("./HomeTutor/homeTutorHistoryModel.js")(
   sequelize,
   Sequelize
 );
-db.hTBooking = require("./HomeTutor/hTBookingModel.js")(sequelize, Sequelize);
+
 db.hTReview = require("./Review/hTReviewModel.js")(sequelize, Sequelize);
 db.appVersion = require("./User/appVersionModel.js")(sequelize, Sequelize);
 
 // Notification
-db.createNotification = require("./createNotificationModel.js")(
+db.createNotification = require("./Admin/createNotificationModel.js")(
   sequelize,
   Sequelize
 );
-db.campaignEmail = require("./campaignEmailModel.js")(sequelize, Sequelize);
-db.campaignEmailCredential = require("./campaignEmailCredentialsModel.js")(
+db.campaignEmail = require("./Admin/campaignEmailModel.js")(
   sequelize,
   Sequelize
 );
+db.campaignEmailCredential =
+  require("./Admin/campaignEmailCredentialsModel.js")(sequelize, Sequelize);
 
 // User association with profile
 db.user.hasOne(db.userProfile, {
@@ -209,26 +210,18 @@ db.user.hasMany(db.userNotification, {
   as: "userNotifications",
 });
 
-// User Association with UserHTSlote
-db.user.hasMany(db.userHTSlote, { foreignKey: "userId", as: "userHTSlote" });
-db.userHTSlote.belongsTo(db.user, {
+// User Association with hTPayment
+db.user.hasMany(db.hTPayment, { foreignKey: "userId", as: "hTPayments" });
+db.hTPayment.belongsTo(db.user, {
   foreignKey: "userId",
   as: "user",
 });
+
 // User Association with Address
 db.user.hasMany(db.address, { foreignKey: "userId", as: "address" });
 db.address.belongsTo(db.user, {
   foreignKey: "userId",
   as: "user",
-});
-// hTTimeSlote Association with UserHTSlote
-db.hTTimeSlote.hasMany(db.userHTSlote, {
-  foreignKey: "sloteId",
-  as: "userHTSlote",
-});
-db.userHTSlote.belongsTo(db.hTTimeSlote, {
-  foreignKey: "sloteId",
-  as: "slote",
 });
 
 // Home Tutor
@@ -246,11 +239,43 @@ db.hTServiceArea.belongsTo(db.homeTutor, {
   as: "homeTutors",
 });
 
+db.homeTutor.hasMany(db.hTPrice, {
+  foreignKey: "homeTutorId",
+  as: "hTPrices",
+});
+db.hTPrice.belongsTo(db.homeTutor, {
+  foreignKey: "homeTutorId",
+  as: "homeTutors",
+});
+
+db.hTTimeSlote.belongsTo(db.hTPrice, {
+  foreignKey: "priceId",
+  as: "hTPrices",
+});
+
 db.homeTutor.hasMany(db.hTTimeSlote, {
   foreignKey: "homeTutorId",
   as: "timeSlotes",
 });
 db.hTTimeSlote.belongsTo(db.homeTutor, {
+  foreignKey: "homeTutorId",
+  as: "homeTutors",
+});
+
+db.hTTimeSlote.hasMany(db.hTPayment, {
+  foreignKey: "hTSlotId",
+  as: "hTPayments",
+});
+db.hTPayment.belongsTo(db.hTTimeSlote, {
+  foreignKey: "hTSlotId",
+  as: "hTSlot",
+});
+
+db.homeTutor.hasMany(db.hTPayment, {
+  foreignKey: "homeTutorId",
+  as: "hTPayment",
+});
+db.hTPayment.belongsTo(db.homeTutor, {
   foreignKey: "homeTutorId",
   as: "homeTutors",
 });
@@ -305,6 +330,7 @@ db.hTServiceArea.addScope(
     )`;
     return {
       attributes: [[sequelize.literal(haversine), "distance"]],
+      // where: sequelize.literal(`${haversine} <= GREATEST(radius, ${distance})`),
       having: sequelize.literal(`distance <= ${distance}`),
     };
   }
@@ -332,19 +358,6 @@ db.hTServiceArea.addScope(
 // }
 // );
 
-// db.emailCredential.findOne({
-//     where: {
-//         email: process.env.BREVO_EMAIL
-//     }
-// }).then((res) => {
-//     console.log(res);
-//     if (!res) {
-//         db.emailCredential.create({
-//             email:process.env.BREVO_EMAIL,
-//             plateForm: "BREVO",
-//             EMAIL_API_KEY: process.env.EMAIL_API_KEY
-//         });
-//     }
-// }).catch((err) => { console.log(err) });
+changeInData(queryInterface);
 
 module.exports = db;

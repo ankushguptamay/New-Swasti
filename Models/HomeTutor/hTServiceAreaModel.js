@@ -35,5 +35,4 @@ module.exports = (sequelize, DataTypes) => {
     return HTServiceArea;
 }
 
-// instructorId
 // homeTutorId

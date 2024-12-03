@@ -27,5 +27,4 @@ module.exports = (sequelize, DataTypes) => {
 }
 
 // ForiegnKey
-// instructorId
 // homeTutorId

@@ -4,6 +4,7 @@ const {
   homeTutorValidation,
   hTutorLocationValidation,
   hTutorTimeSloteValidation,
+  hTutorPriceValidation,
 } = require("../../Middleware/Validate/validateHomeTutor");
 const { deleteSingleFile } = require("../../Util/deleteFile");
 const generateOTP = require("../../Util/generateOTP");
@@ -12,6 +13,7 @@ const HTServiceArea = db.hTServiceArea;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutorHistory = db.homeTutorHistory;
 const HTutorImages = db.hTImage;
+const HTPrice = db.hTPrice;
 // const User = db.user;
 
 const { uploadFileToBunny } = require("../../Util/bunny");
@@ -32,38 +34,9 @@ exports.createHomeTutor = async (req, res) => {
       language,
       yogaFor,
       homeTutorName,
-      privateSessionPrice_Day,
-      privateSessionPrice_Month,
-      groupSessionPrice_Day,
-      groupSessionPrice_Month,
       specilization,
       instructorBio,
     } = req.body;
-    // Validate price with there offer
-    if (isGroupSO === true) {
-      if (groupSessionPrice_Day && groupSessionPrice_Month) {
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "Please enter required group class price!",
-        });
-      }
-    }
-    if (isPrivateSO === true) {
-      if (privateSessionPrice_Day && privateSessionPrice_Month) {
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "Please enter required individual class price!",
-        });
-      }
-    }
-    if (!isPrivateSO && !isGroupSO) {
-      return res.status(400).send({
-        success: false,
-        message: "Please select atleast one service offered!",
-      });
-    }
 
     // Store in database
     const homeTutor = await HomeTutor.create({
@@ -72,10 +45,6 @@ exports.createHomeTutor = async (req, res) => {
       isPrivateSO: isPrivateSO,
       isGroupSO: isGroupSO,
       language: language,
-      privateSessionPrice_Day: privateSessionPrice_Day,
-      privateSessionPrice_Month: privateSessionPrice_Month,
-      groupSessionPrice_Day: groupSessionPrice_Day,
-      groupSessionPrice_Month: groupSessionPrice_Month,
       specilization: specilization,
       instructorBio: instructorBio,
       instructorId: req.user.id,
@@ -88,10 +57,6 @@ exports.createHomeTutor = async (req, res) => {
       isPrivateSO: isPrivateSO,
       isGroupSO: isGroupSO,
       language: language,
-      privateSessionPrice_Day: privateSessionPrice_Day,
-      privateSessionPrice_Month: privateSessionPrice_Month,
-      groupSessionPrice_Day: groupSessionPrice_Day,
-      groupSessionPrice_Month: groupSessionPrice_Month,
       specilization: specilization,
       instructorBio: instructorBio,
       homeTutorId: homeTutor.id,
@@ -185,14 +150,51 @@ exports.addHTutorTimeSlote = async (req, res) => {
       newServiceArea,
       noOfPeople,
       isOnline,
+      newPrice,
     } = req.body;
+    // Check home tutor present or not
     const homeTutorId = req.params.id;
-    let serviceAreaId = req.body.serviceAreaId;
+    const homeTutor = await HomeTutor.findOne({
+      where: { id: homeTutorId, deletedThrough: null },
+      attributes: ["id", "isGroupSO", "isPrivateSO"],
+      raw: true,
+    });
+    if (!homeTutor) {
+      return res.status(400).send({
+        success: false,
+        message: "This home tutor is not present!",
+      });
+    }
+    // Validate group or private
+    if (serviceType === "Group") {
+      if (!homeTutor.isGroupSO) {
+        return res.status(400).send({
+          success: false,
+          message:
+            "You do not provide group classes on the bases of your home tutor information!",
+        });
+      }
+    } else if (serviceType === "Private") {
+      if (!homeTutor.isGroupSO) {
+        return res.status(400).send({
+          success: false,
+          message:
+            "You do not provide private classes on the bases of your home tutor information!",
+        });
+      }
+    } else {
+      return res.status(400).send({
+        success: false,
+        message: "Class service type is not define!",
+      });
+    }
 
+    let serviceAreaId = req.body.serviceAreaId;
+    let priceId = req.body.priceId;
     // Serivce Area
     if (serviceAreaId) {
       const isSAPresent = await HTServiceArea.findOne({
-        where: { id: serviceAreaId, homeTutorId: homeTutorId },
+        where: { id: serviceAreaId, homeTutorId },
       });
       if (!isSAPresent) {
         return res.status(400).send({
@@ -239,6 +241,62 @@ exports.addHTutorTimeSlote = async (req, res) => {
         message: "Please select a service area!",
       });
     }
+
+    // Price
+    if (priceId) {
+      const isPricePresent = await HTPrice.findOne({
+        where: { id: priceId, homeTutorId },
+      });
+      if (!isPricePresent) {
+        return res.status(400).send({
+          success: false,
+          message: "This price chart is not present!",
+        });
+      }
+    } else if (newPrice) {
+      if (
+        newPrice.priceName &&
+        newPrice.private_PricePerDayPerRerson &&
+        newPrice.group_PricePerDayPerRerson &&
+        newPrice.durationType
+      ) {
+        // Check is hometutor execpted required condition
+        const private_PricePerDayPerRerson = homeTutor.isPrivateSO
+          ? newPrice.private_PricePerDayPerRerson
+          : null;
+        const group_PricePerDayPerRerson = homeTutor.isGroupSO
+          ? newPrice.group_PricePerDayPerRerson
+          : null;
+
+        const isPrice = await HTPrice.findOne({
+          where: { priceName, durationType },
+          raw: true,
+        });
+        if (!isPrice) {
+          const price = await HTPrice.create({
+            priceName: newPrice.priceName,
+            private_PricePerDayPerRerson,
+            group_PricePerDayPerRerson,
+            durationType: newPrice.durationType,
+            homeTutorId: homeTutorId,
+          });
+          priceId = price.dataValues.id;
+        } else {
+          priceId = isPrice.dataValues.id;
+        }
+      } else {
+        return res.status(400).send({
+          success: false,
+          message: "Please send all required fields to add price!",
+        });
+      }
+    } else {
+      return res.status(400).send({
+        success: false,
+        message: "Please select a price chart!",
+      });
+    }
+
     // Date validation
     const todayIST = new Date();
     todayIST.setMinutes(todayIST.getMinutes() + 330);
@@ -267,19 +325,6 @@ exports.addHTutorTimeSlote = async (req, res) => {
       date.push(today.toISOString().slice(0, 10));
     }
 
-    // Check is this home tutor present and created by same instructor
-    const isHomeTutor = await HomeTutor.findOne({
-      where: {
-        id: homeTutorId,
-        instructorId: req.user.id,
-      },
-    });
-    if (!isHomeTutor) {
-      return res.status(400).send({
-        success: false,
-        message: "This home tutor is not present!",
-      });
-    }
     // Store in database
     for (let j = 0; j < date.length; j++) {
       // Get All Today Code
@@ -331,7 +376,8 @@ exports.addHTutorTimeSlote = async (req, res) => {
           noOfPeople: serviceType === "Private" ? 1 : noOfPeople,
           time: startTime,
           isBooked: false,
-          serviceAreaId: serviceAreaId,
+          serviceAreaId,
+          durationType: priceId,
           appointmentStatus: "Active",
           homeTutorId: homeTutorId,
         });
@@ -403,6 +449,66 @@ exports.addHTutorImage = async (req, res) => {
     res.status(200).send({
       success: true,
       message: `${fileCanUpload} home tutor images added successfully!`,
+      data: { homeTutorId: homeTutorId },
+    });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.addHTutorPrice = async (req, res) => {
+  try {
+    // Validate Body
+    const { error } = hTutorPriceValidation(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
+    }
+    const { priceName, durationType } = req.body;
+    const homeTutorId = req.params.id;
+    // Check is this home tutor present and created by same instructor
+    const isHomeTutor = await HomeTutor.findOne({
+      where: {
+        id: homeTutorId,
+        instructorId: req.user.id,
+      },
+      raw: true,
+    });
+    if (!isHomeTutor) {
+      return res.status(400).send({
+        success: false,
+        message: "This home tutor is not present!",
+      });
+    }
+    const price = await HTPrice.findOne({ where: { priceName, durationType } });
+    if (price) {
+      return res.status(400).send({
+        success: false,
+        message: "Same price chart already exist!",
+      });
+    }
+    // Check is hometutor execpted required condition
+    const private_PricePerDayPerRerson = isHomeTutor.isPrivateSO
+      ? req.body.private_PricePerDayPerRerson
+      : null;
+    const group_PricePerDayPerRerson = isHomeTutor.isGroupSO
+      ? req.body.group_PricePerDayPerRerson
+      : null;
+
+    // Store in database
+    await HTPrice.create({
+      priceName,
+      private_PricePerDayPerRerson,
+      group_PricePerDayPerRerson,
+      durationType,
+      homeTutorId: homeTutorId,
+    });
+    // Final Response
+    res.status(200).send({
+      success: true,
+      message: "Price chart added successfully!",
       data: { homeTutorId: homeTutorId },
     });
   } catch (err) {
