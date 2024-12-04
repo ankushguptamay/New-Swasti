@@ -29,6 +29,11 @@ const {
   deleteCourseType,
 } = require("../../Controller/Master/courseTypeController");
 const {
+  createSkill,
+  getAllSkill,
+  deleteSkill,
+} = require("../../Controller/Master/skillController");
+const {
   createUniversity_Institute,
   getAllUniversity_Institute,
   getInstituteByUniversity,
@@ -125,5 +130,9 @@ admin.put(
   addUpdateYFCategoryFile
 );
 admin.delete("/y-f-c-file/:id", deleteYFCategoryFile);
+// 10. Skill
+admin.post("/skill", createSkill);
+admin.get("/skill", getAllSkill);
+admin.delete("/skill/:id", deleteSkill);
 
 module.exports = admin;

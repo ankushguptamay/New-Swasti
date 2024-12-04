@@ -93,3 +93,10 @@ exports.therapyTypeValidation = (data) => {
   }); // .options({ allowUnknown: true });
   return schema.validate(data);
 };
+
+exports.skillValidation = (data) => {
+  const schema = joi.object().keys({
+    skill: joi.string().required(),
+  }); // .options({ allowUnknown: true });
+  return schema.validate(data);
+};

@@ -1,5 +1,4 @@
 const db = require("../../Models");
-const { Op } = require("sequelize");
 const {
   courseCategoryValidation,
 } = require("../../Middleware/Validate/validateMaster");

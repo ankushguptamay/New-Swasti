@@ -3,6 +3,7 @@ const express = require("express");
 const {
   getAllCourseCategory,
 } = require("../../../Controller/Master/courseCategoryController");
+const { getAllSkill } = require("../../Controller/Master/skillController");
 const {
   getAllCourseDuration,
 } = require("../../../Controller/Master/courseDurationController");
@@ -38,6 +39,7 @@ const instructor = express.Router();
 
 // Master
 instructor.get("/coursecategories", getAllCourseCategory);
+instructor.get("/skills", getAllSkill);
 instructor.get("/courseDurations", getAllCourseDuration);
 instructor.get("/courseTypes", getAllCourseType);
 

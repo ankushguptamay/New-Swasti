@@ -35,6 +35,7 @@ db.userNotification = require("./Admin/userNotificationModel.js")(
 );
 
 // Master
+db.skill = require("./Master/skillModel.js")(sequelize, Sequelize);
 db.coupon = require("./Master/couponModel.js")(sequelize, Sequelize);
 db.yogaForCategory = require("./Master/yogaForCategoryModel.js")(
   sequelize,
@@ -108,7 +109,7 @@ db.instructorHistory =
     Sequelize
   );
 
-//Home Tutor
+// Home Tutor
 db.homeTutor = require("./HomeTutor/homeTutorModel.js")(sequelize, Sequelize);
 db.ht_coupon = require("./HomeTutor/ht_Coupon_JunctionModel.js")(
   sequelize,
