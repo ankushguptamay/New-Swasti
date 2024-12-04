@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         defaultValue: "Self",
       },
-      isInstructor: { type: DataTypes.BOOLEAN},
+      isInstructor: { type: DataTypes.BOOLEAN },
       bio: { type: DataTypes.STRING(1234) },
       socialMediaLink: { type: DataTypes.STRING(1234) },
       linkedIn: { type: DataTypes.STRING },
@@ -63,6 +63,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      totalExperienceInYears: { type: DataTypes.STRING },
       isTherapist: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

@@ -96,7 +96,8 @@ instructor.use((req, res, next) => {
       req.user.profilePic &&
       req.user.languages &&
       req.user.bio &&
-      req.user.dateOfBirth
+      req.user.dateOfBirth &&
+      req.user.totalExperienceInYears
     ) {
       if (req.user.profilePic.path) {
         req.userCode = req.user.userCode;

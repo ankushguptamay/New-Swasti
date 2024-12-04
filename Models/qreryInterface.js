@@ -128,4 +128,14 @@ exports.changeInData = (queryInterface) => {
   //   .catch((err) => {
   //     console.log(err);
   //   });
+  // queryInterface
+  // .addColumn("users", "totalExperienceInYears", {
+  //   type: DataTypes.STRING
+  // })
+  // .then((res) => {
+  //   console.log("added!");
+  // })
+  // .catch((err) => {
+  //   console.log(err);
+  // });
 };

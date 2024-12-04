@@ -569,7 +569,7 @@ exports.getUser = async (req, res) => {
       }
       if (user.profilePic) {
         if (user.profilePic.path) {
-          profileComplete = profileComplete + 4;
+          profileComplete = profileComplete + 2;
         }
       }
       if (user.languages) {
@@ -578,9 +578,9 @@ exports.getUser = async (req, res) => {
       if (user.bio) {
         profileComplete = profileComplete + 2;
       }
-      // if (user.address.length >= 1) {
-      //   profileComplete = profileComplete + 2;
-      // }
+      if (user.totalExperienceInYears) {
+        profileComplete = profileComplete + 2;
+      }
       if (user.dateOfBirth) {
         profileComplete = profileComplete + 2;
       }
@@ -1022,6 +1022,7 @@ exports.updateInstructor = async (req, res) => {
       linkedIn,
       languages,
       dateOfBirth,
+      totalExperienceInYears,
     } = req.body;
     const name = capitalizeFirstLetter(req.body.name);
     // store current data in history
@@ -1039,6 +1040,7 @@ exports.updateInstructor = async (req, res) => {
       linkedIn: instructor.linkedIn,
       languages: instructor.languages,
       dateOfBirth: instructor.dateOfBirth,
+      totalExperienceInYears: instructor.totalExperienceInYears,
     });
     // Update
     await instructor.update({
@@ -1051,6 +1053,7 @@ exports.updateInstructor = async (req, res) => {
       linkedIn: linkedIn,
       languages: languages,
       dateOfBirth: dateOfBirth,
+      totalExperienceInYears,
     });
     // Update Bio in home tutor
     await HomeTutor.update(
