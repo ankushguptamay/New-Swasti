@@ -129,8 +129,45 @@ exports.changeInData = (queryInterface) => {
   //     console.log(err);
   //   });
   // queryInterface
+  //   .addColumn("hTTimeSlots", "startDate", {
+  //     type: DataTypes.DATEONLY,
+  //   })
+  //   .then((res) => {
+  //     console.log("added!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
+  //   .addColumn("hTTimeSlots", "endDate", {
+  //     type: DataTypes.DATEONLY,
+  //   })
+  //   .then((res) => {
+  //     console.log("added!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  //   queryInterface.removeColumn("hTTimeSlots", "date")
+  //   .then((res) => {
+  //     console.log("removed!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
   // .addColumn("users", "totalExperienceInYears", {
-  //   type: DataTypes.STRING
+  //   type: DataTypes.INTEGER
+  // })
+  // .then((res) => {
+  //   console.log("added!");
+  // })
+  // .catch((err) => {
+  //   console.log(err);
+  // });
+  // queryInterface
+  // .addColumn("instructorHistorys", "totalExperienceInYears", {
+  //   type: DataTypes.INTEGER
   // })
   // .then((res) => {
   //   console.log("added!");

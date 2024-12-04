@@ -89,7 +89,7 @@ exports.updateInstructor = (data) => {
     twitter_x: joi.string().optional(),
     languages: joi.array().required(),
     dateOfBirth: joi.string().required(),
-    totalExperienceInYears: joi.string().required(),
+    totalExperienceInYears: joi.number().required(),
   }); //.options({ allowUnknown: true });
   return schema.validate(data);
 };

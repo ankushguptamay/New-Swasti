@@ -63,7 +63,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      totalExperienceInYears: { type: DataTypes.STRING },
+      totalExperienceInYears: { type: DataTypes.INTEGER },
       isTherapist: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

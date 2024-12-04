@@ -11,6 +11,7 @@ const HTutorImages = db.hTImage;
 const UserNotification = db.userNotification;
 const InstructorExperience = db.instructorExperience;
 const HTPrice = db.hTPrice;
+const User = db.user;
 
 exports.getMyHomeTutorForInstructor = async (req, res) => {
   try {
@@ -332,6 +333,18 @@ exports.getHomeTutorForUser = async (req, res) => {
       });
     }
     // Filter
+    let instructorExperience = {
+      model: User,
+      as: "instructors",
+      attributes: ["id", "totalExperienceInYears"],
+    };
+    if (experience) {
+      instructorExperience = {
+        ...instructorExperience,
+        where: { totalExperienceInYears: { [Op.gte]: experience } },
+        required: true,
+      };
+    }
     if (language && language.length > 0) {
       const languageCondition = [];
       for (const lang of language) {
@@ -427,6 +440,7 @@ exports.getHomeTutorForUser = async (req, res) => {
           required: false,
         },
         priceTutor,
+        instructorExperience,
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -645,21 +659,23 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
           {
             model: HTutorImages,
             as: "images",
-            where: {
-              deletedThrough: null,
-            },
+            where: { deletedThrough: null },
             attributes: ["path"],
             required: false,
           },
           {
             model: HTPrice,
             as: "hTPrices",
-            where: {
-              deletedThrough: null,
-            },
+            where: { deletedThrough: null },
             attributes: {
               exclude: ["createdAt", "updatedAt", "deletedThrough"],
             },
+            required: false,
+          },
+          {
+            model: User,
+            as: "instructors",
+            attributes: ["id", "totalExperienceInYears"],
             required: false,
           },
         ],
@@ -681,11 +697,29 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
         attributes: ["id", "joinDate", "workHistory", "role"],
         raw: true,
       });
+      // Total Home tutor experience on swasti
+      const oldestHomeTutor = await HomeTutor.findOne({
+        attributes: ["id", "createdAt"],
+        limit: 1,
+        paranoid: false,
+        order: [["createdAt", "DESC"]],
+        raw: true,
+      });
+      // calculate days
+      const provideingHTInDays = Math.floor(
+        (new Date().getTime() - new Date(oldestHomeTutor.createdAt).getTime()) /
+          (24 * 60 * 60 * 1000)
+      );
       // Final Response
       res.status(200).send({
         success: true,
         message: "Home tutor fetched successfully!",
-        data: { ...homeTutor.dataValues, serviceAreas, experiences },
+        data: {
+          ...homeTutor.dataValues,
+          serviceAreas,
+          experiences,
+          provideingHTInDays,
+        },
       });
     } else {
       res.status(400).send({
@@ -1111,6 +1145,18 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     ];
 
     // Filter
+    let instructorExperience = {
+      model: User,
+      as: "instructors",
+      attributes: ["id", "totalExperienceInYears"],
+    };
+    if (experience) {
+      instructorExperience = {
+        ...instructorExperience,
+        where: { totalExperienceInYears: { [Op.gte]: experience } },
+        required: true,
+      };
+    }
     if (language && typeof language === "object" && language.length > 0) {
       const languageCondition = [];
       for (const lang of language) {
@@ -1264,6 +1310,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
               "isPrivateSO",
               "yogaFor",
             ],
+            include: [instructorExperience],
           },
         ],
       }),

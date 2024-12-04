@@ -7,8 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      date: { type: DataTypes.DATEONLY },
-      time: { type: DataTypes.STRING },
+      startDate: { type: DataTypes.DATEONLY },
+      endDate: { type: DataTypes.DATEONLY },
+      time: { type: DataTypes.STRING }, // 24 hour formate
       timeDurationInMin: { type: DataTypes.INTEGER },
       isBooked: {
         type: DataTypes.BOOLEAN,

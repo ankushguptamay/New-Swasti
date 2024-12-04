@@ -230,6 +230,10 @@ db.user.hasMany(db.homeTutor, {
   foreignKey: "instructorId",
   as: "homeTutors",
 });
+db.homeTutor.belongsTo(db.user, {
+  foreignKey: "instructorId",
+  as: "instructors",
+});
 
 db.homeTutor.hasMany(db.hTServiceArea, {
   foreignKey: "homeTutorId",

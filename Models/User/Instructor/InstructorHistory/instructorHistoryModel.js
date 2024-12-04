@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+      totalExperienceInYears: { type: DataTypes.INTEGER },
       bio: {
         type: DataTypes.STRING(1234),
       },

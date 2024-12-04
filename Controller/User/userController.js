@@ -1053,7 +1053,7 @@ exports.updateInstructor = async (req, res) => {
       linkedIn: linkedIn,
       languages: languages,
       dateOfBirth: dateOfBirth,
-      totalExperienceInYears,
+      totalExperienceInYears: parseInt(totalExperienceInYears),
     });
     // Update Bio in home tutor
     await HomeTutor.update(
