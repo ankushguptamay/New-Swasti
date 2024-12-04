@@ -1,5 +1,6 @@
 const db = require("../../Models");
 const { Op } = require("sequelize");
+const moment = require("moment");
 const {
   homeTutorValidation,
   hTutorLocationValidation,
@@ -152,6 +153,20 @@ exports.addHTutorTimeSlote = async (req, res) => {
       isOnline,
       newPrice,
     } = req.body;
+    // Date validation
+    const todayIST = new Date();
+    todayIST.setMinutes(todayIST.getMinutes() + 330);
+    if (
+      new Date(`${startDate}T${startTime}:00.000Z`).getTime() <
+        todayIST.getTime() ||
+      new Date(`${endDate}T${startTime}:00.000Z`).getTime() < todayIST.getTime()
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "Please select appropriate date!",
+      });
+    }
+
     // Check home tutor present or not
     const homeTutorId = req.params.id;
     const homeTutor = await HomeTutor.findOne({
@@ -243,9 +258,12 @@ exports.addHTutorTimeSlote = async (req, res) => {
     }
 
     // Price
+    let price;
     if (priceId) {
       const isPricePresent = await HTPrice.findOne({
         where: { id: priceId, homeTutorId },
+        raw: true,
+        attributes: ["id", "durationType"],
       });
       if (!isPricePresent) {
         return res.status(400).send({
@@ -253,6 +271,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
           message: "This price chart is not present!",
         });
       }
+      price = isPricePresent;
     } else if (newPrice) {
       if (
         newPrice.priceName &&
@@ -260,6 +279,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         newPrice.group_PricePerDayPerRerson &&
         newPrice.durationType
       ) {
+        price = newPrice;
         // Check is hometutor execpted required condition
         const private_PricePerDayPerRerson = homeTutor.isPrivateSO
           ? newPrice.private_PricePerDayPerRerson
@@ -297,92 +317,175 @@ exports.addHTutorTimeSlote = async (req, res) => {
       });
     }
 
-    // Date validation
-    const todayIST = new Date();
-    todayIST.setMinutes(todayIST.getMinutes() + 330);
-    if (
-      new Date(`${startDate}T${startTime}:00.000Z`).getTime() <
-        todayIST.getTime() ||
-      new Date(`${endDate}T${startTime}:00.000Z`).getTime() < todayIST.getTime()
-    ) {
-      return res.status(400).send({
-        success: false,
-        message: "Please select appropriate date!",
-      });
+    function getCoveredDates(slot) {
+      const { startDate, endDate, dateDurationType } = slot;
+      const start = moment(startDate);
+      const end = moment(endDate);
+      const coveredDates = [];
+
+      if (dateDurationType === "daily") {
+        if (startDate === endDate) {
+          coveredDates.push(start.format("YYYY-MM-DD"));
+        } else {
+          let current = start.clone();
+          while (current.isSameOrBefore(end)) {
+            coveredDates.push(current.format("YYYY-MM-DD"));
+            current.add(1, "days");
+          }
+        }
+      } else if (dateDurationType.startsWith("weekly")) {
+        const weeklyDay = parseInt(dateDurationType.split(" ")[1], 10); // Extract the weekday
+        let current = start.clone().day(weeklyDay);
+        if (current.isBefore(start)) current.add(1, "week"); // Ensure within range
+
+        while (current.isSameOrBefore(end)) {
+          coveredDates.push(current.format("YYYY-MM-DD"));
+          current.add(1, "week");
+        }
+      } else if (dateDurationType.startsWith("monthly")) {
+        const monthlyDay = parseInt(dateDurationType.split(" ")[1], 10); // Extract the day of the month
+        let current = start.clone().date(monthlyDay);
+        if (current.isBefore(start)) current.add(1, "month"); // Ensure within range
+
+        while (current.isSameOrBefore(end)) {
+          coveredDates.push(current.format("YYYY-MM-DD"));
+          current.add(1, "month");
+        }
+      }
+      return coveredDates;
     }
 
-    // Create array of dates
-    function getDifferenceInDays(date1, date2) {
-      const timeDiff = Math.abs(new Date(date2) - new Date(date1));
-      const diffInDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-      return diffInDays;
-    }
-    const noOfDate = getDifferenceInDays(startDate, endDate) + 1;
-    const date = [];
-    for (let i = 0; i < noOfDate; i++) {
-      const today = new Date(startDate);
-      today.setDate(today.getDate() + i);
-      date.push(today.toISOString().slice(0, 10));
+    // Function to check for overlap between two slots
+    function isSlotOverlapping(existingSlot, newSlot) {
+      const existingDates = getCoveredDates(existingSlot);
+      const newDates = getCoveredDates(newSlot);
+      const overlappingDates = existingDates.filter((date) =>
+        newDates.includes(date)
+      );
+      if (overlappingDates.length === 0) return false;
+      const newStartTime = moment(newSlot.startTime, "HH:mm");
+      const newEndTime = newStartTime
+        .clone()
+        .add(newSlot.timeDrationInMin, "minutes");
+      for (const date of overlappingDates) {
+        const existingStartTime = moment(existingSlot.startTime, "HH:mm");
+        const existingEndTime = existingStartTime
+          .clone()
+          .add(existingSlot.timeDrationInMin, "minutes");
+        if (
+          newStartTime.isBefore(existingEndTime) && // New slot starts before existing ends
+          newEndTime.isAfter(existingStartTime) // New slot ends after existing starts
+        ) {
+          return true; // Overlap found
+        }
+      }
+      return false;
     }
 
-    // Store in database
-    for (let j = 0; j < date.length; j++) {
-      // Get All Today Code
-      let code;
-      const day = date[j].slice(8, 10);
-      const year = date[j].slice(2, 4);
-      const month = date[j].slice(5, 7);
-      const indtructorNumb = `${req.userCode.slice(4)}${day}${month}${year}`;
-      const isSloteCode = await HTTimeSlot.findAll({
-        where: {
-          sloteCode: { [Op.startsWith]: indtructorNumb },
-        },
-        order: [["createdAt", "ASC"]],
-        paranoid: false,
-      });
+    // Function to validate all new slots against existing slots
+    function validateSlots(existingSlots, newSlots) {
+      const conflictingSlots = [];
+      for (const newSlot of newSlots) {
+        for (const existingSlot of existingSlots) {
+          if (isSlotOverlapping(existingSlot, newSlot)) {
+            conflictingSlots.push(newSlot);
+            break; // No need to check further if overlap is found
+          }
+        }
+      }
+      return conflictingSlots;
+    }
 
-      if (isSloteCode.length > 0) {
-        code = isSloteCode[isSloteCode.length - 1].sloteCode;
+    // This function only supports daily dateDurationType
+    function expandSlotToDailyArray(slot) {
+      const { startDate, endDate } = slot;
+      const start = moment(startDate);
+      const end = moment(endDate);
+      const dailySlots = [];
+
+      let current = start.clone();
+      while (current.isSameOrBefore(end)) {
+        dailySlots.push({
+          startDate: current.format("YYYY-MM-DD"),
+          endDate: current.format("YYYY-MM-DD"),
+        });
+        current.add(1, "days");
       }
 
-      const otp = generateOTP.generateFixedLengthRandomNumber(
-        process.env.OTP_DIGITS_LENGTH
-      );
-      // Generating Code
-      const isSlote = await HTTimeSlot.findOne({
-        where: {
-          time: startTime,
-          date: date[j],
-          homeTutorId: homeTutorId,
-        },
-      });
-      if (!isSlote) {
-        if (!code) {
-          code = indtructorNumb + 1;
-        } else {
-          const digit = indtructorNumb.length;
-          let lastDigits = code.substring(digit);
-          let incrementedDigits = parseInt(lastDigits, 10) + 1;
-          code = indtructorNumb + incrementedDigits;
-        }
-        // Store in database
-        await HTTimeSlot.create({
-          date: date[j],
-          password: otp,
-          isOnline: isOnline,
-          timeDurationInMin: timeDurationInMin,
-          sloteCode: code,
-          serviceType: serviceType,
-          noOfPeople: serviceType === "Private" ? 1 : noOfPeople,
-          time: startTime,
-          isBooked: false,
-          serviceAreaId,
-          durationType: priceId,
-          appointmentStatus: "Active",
-          homeTutorId: homeTutorId,
+      return dailySlots;
+    }
+
+    // Slote Instructor want to create
+    let newSlots = [
+      {
+        startDate,
+        endDate,
+        startTime,
+        timeDurationInMin,
+        durationType: price.durationType,
+      },
+    ];
+    if (price.durationType === "daily") {
+      const expandedSlots = expandSlotToDailyArray({ startDate, endDate });
+      newSlots = [];
+      for (let i = 0; i < expandedSlots.length; i++) {
+        newSlots.push({
+          ...expandedSlots[i],
+          durationType: "daily",
+          startTime,
+          timeDurationInMin,
         });
       }
     }
+
+    // Slote that are ongoing in database
+    const today = moment().format("YYYY-MM-DD");
+    const existingSlots = await HTTimeSlot.findAll({
+      where: { endDate: { [Op.gte]: today }, homeTutorId },
+      attributes: [
+        "startDate",
+        "endDate",
+        "timeDurationInMin",
+        "durationType",
+        "startTime",
+      ],
+    });
+
+    // Validate new slots
+    if (existingSlots.length > 0) {
+      const conflicting = validateSlots(existingSlots, newSlots);
+      if (conflicting.length > 0) {
+        return res.status(400).send({
+          success: false,
+          message: "Conflicting slots found!",
+        });
+      }
+    }
+
+    // Store in database
+    for (let i = 0; i < newSlots.length; i++) {
+      const otp = generateOTP.generateFixedLengthRandomNumber(
+        process.env.OTP_DIGITS_LENGTH
+      );
+      await HTTimeSlot.create({
+        startDate: newSlots[i].startDate,
+        endDate: newSlots[i].endDate,
+        password: otp,
+        isOnline: isOnline,
+        timeDurationInMin: timeDurationInMin,
+        sloteCode: new Date().getTime(),
+        serviceType: serviceType,
+        noOfPeople: serviceType === "Private" ? 1 : noOfPeople,
+        time: startTime,
+        isBooked: false,
+        serviceAreaId,
+        durationType: price.durationType,
+        priceId,
+        appointmentStatus: "Active",
+        homeTutorId: homeTutorId,
+      });
+    }
+
     // Final Response
     res.status(200).send({
       success: true,
