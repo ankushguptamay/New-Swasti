@@ -175,4 +175,65 @@ exports.changeInData = (queryInterface) => {
   // .catch((err) => {
   //   console.log(err);
   // });
+  
+  // queryInterface
+  //   .addColumn("hTPrices", "private_totalPricePerPerson", {
+  //     type: DataTypes.INTEGER,
+  //   })
+  //   .then((res) => {
+  //     console.log("added!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
+  //   .addColumn("hTPrices", "group_totalPricePerPerson", {
+  //     type: DataTypes.INTEGER,
+  //   })
+  //   .then((res) => {
+  //     console.log("added!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
+  //   .changeColumn("hTPrices", "private_PricePerDayPerRerson", {
+  //     type: DataTypes.INTEGER,
+  //   })
+  //   .then((res) => {
+  //     console.log("changed!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
+  //   .removeColumn("hTTimeSlots", "noOfPeople")
+  //   .then((res) => {
+  //     console.log("removed!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
+  //   .addColumn("hTTimeSlots", "noOfPeopleCanBook", {
+  //     type: DataTypes.INTEGER,
+  //     defaultValue: 1,
+  //   })
+  //   .then((res) => {
+  //     console.log("changed!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+  // queryInterface
+  //   .addColumn("hTTimeSlots", "bookedBy", {
+  //     type: DataTypes.INTEGER,
+  //     defaultValue: 0,
+  //   })
+  //   .then((res) => {
+  //     console.log("changed!");
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
 };

@@ -149,7 +149,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
       timeDurationInMin,
       serviceType,
       newServiceArea,
-      noOfPeople,
+      noOfPeopleCanBook,
       isOnline,
       newPrice,
     } = req.body;
@@ -277,15 +277,23 @@ exports.addHTutorTimeSlote = async (req, res) => {
         newPrice.priceName &&
         newPrice.private_PricePerDayPerRerson &&
         newPrice.group_PricePerDayPerRerson &&
+        newPrice.private_totalPricePerPerson &&
+        newPrice.group_totalPricePerPerson &&
         newPrice.durationType
       ) {
         price = newPrice;
         // Check is hometutor execpted required condition
         const private_PricePerDayPerRerson = homeTutor.isPrivateSO
-          ? newPrice.private_PricePerDayPerRerson
+          ? parseInt(newPrice.private_PricePerDayPerRerson)
+          : null;
+        const private_totalPricePerPerson = homeTutor.isPrivateSO
+          ? parseInt(newPrice.private_totalPricePerPerson)
           : null;
         const group_PricePerDayPerRerson = homeTutor.isGroupSO
-          ? newPrice.group_PricePerDayPerRerson
+          ? parseInt(newPrice.group_PricePerDayPerRerson)
+          : null;
+        const group_totalPricePerPerson = homeTutor.isGroupSO
+          ? parseInt(newPrice.group_totalPricePerPerson)
           : null;
 
         const isPrice = await HTPrice.findOne({
@@ -296,7 +304,9 @@ exports.addHTutorTimeSlote = async (req, res) => {
           const price = await HTPrice.create({
             priceName: newPrice.priceName,
             private_PricePerDayPerRerson,
+            private_totalPricePerPerson,
             group_PricePerDayPerRerson,
+            group_totalPricePerPerson,
             durationType: newPrice.durationType,
             homeTutorId: homeTutorId,
           });
@@ -475,7 +485,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         timeDurationInMin: timeDurationInMin,
         sloteCode: new Date().getTime(),
         serviceType: serviceType,
-        noOfPeople: serviceType === "Private" ? 1 : noOfPeople,
+        noOfPeopleCanBook: serviceType === "Private" ? 1 : noOfPeopleCanBook,
         time: startTime,
         isBooked: false,
         serviceAreaId,
@@ -596,15 +606,23 @@ exports.addHTutorPrice = async (req, res) => {
     const private_PricePerDayPerRerson = isHomeTutor.isPrivateSO
       ? req.body.private_PricePerDayPerRerson
       : null;
+    const private_totalPricePerPerson = homeTutor.isPrivateSO
+      ? parseInt(newPrice.private_totalPricePerPerson)
+      : null;
     const group_PricePerDayPerRerson = isHomeTutor.isGroupSO
       ? req.body.group_PricePerDayPerRerson
+      : null;
+    const group_totalPricePerPerson = homeTutor.isGroupSO
+      ? parseInt(newPrice.group_totalPricePerPerson)
       : null;
 
     // Store in database
     await HTPrice.create({
       priceName,
       private_PricePerDayPerRerson,
+      private_totalPricePerPerson,
       group_PricePerDayPerRerson,
+      group_totalPricePerPerson,
       durationType,
       homeTutorId: homeTutorId,
     });

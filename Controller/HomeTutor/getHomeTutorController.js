@@ -378,8 +378,8 @@ exports.getHomeTutorForUser = async (req, res) => {
         where: {
           deletedThrough: null,
           [Op.or]: [
-            { private_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
-            { group_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
+            { private_totalPricePerPerson: { [Op.lte]: parseFloat(price) } },
+            { group_totalPricePerPerson: { [Op.lte]: parseFloat(price) } },
           ],
         },
         attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
@@ -649,7 +649,8 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
               "isBooked",
               "isOnline",
               "serviceType",
-              "noOfPeople",
+              "noOfPeopleCanBook",
+              "bookedBy",
               "sloteCode",
               "appointmentStatus",
               "createdAt",
@@ -1213,8 +1214,8 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         where: {
           deletedThrough: null,
           [Op.or]: [
-            { private_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
-            { group_PricePerDayPerRerson: { [Op.lte]: parseFloat(price) } },
+            { private_totalPricePerPerson: { [Op.lte]: parseFloat(price) } },
+            { group_totalPricePerPerson: { [Op.lte]: parseFloat(price) } },
           ],
         },
         attributes: ["id", "homeTutorId"],
@@ -1295,7 +1296,8 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
           "isBooked",
           "isOnline",
           "serviceType",
-          "noOfPeople",
+          "noOfPeopleCanBook",
+          "bookedBy",
           "appointmentStatus",
           "serviceAreaId",
         ],

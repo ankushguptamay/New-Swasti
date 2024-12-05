@@ -25,13 +25,7 @@ exports.createHTOrder = async (req, res) => {
     if (error) {
       return res.status(400).send(error.details[0].message);
     }
-    const {
-      amount,
-      currency,
-      receipt,
-      couponCode,
-      hTSlotIds,
-    } = req.body; // receipt is id created for this order
+    const { amount, currency, receipt, couponCode, hTSlotIds } = req.body; // receipt is id created for this order
     const userId = req.user.id;
 
     const timeSlote = await HTTimeSlot.findOne({
@@ -74,7 +68,7 @@ exports.createHTOrder = async (req, res) => {
             verify: true,
           },
         });
-        if (findBooked.length >= parseInt(timeSlote.noOfPeople)) {
+        if (findBooked.length >= parseInt(timeSlote.noOfPeopleCanBook)) {
           return res.status(400).send({
             success: false,
             message: "This group class is already full! Please try another!",

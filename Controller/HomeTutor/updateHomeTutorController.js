@@ -125,7 +125,7 @@ exports.updateHTServiceArea = async (req, res) => {
         message: "Home tutor area is not present!",
       });
     }
-  
+
     if (area.dataValues.homeTutors.approvalStatusByAdmin === "Approved") {
       await area.update({ deletedThrough: "ByUpdation" });
       await area.destroy();
@@ -195,10 +195,16 @@ exports.updateHTPrice = async (req, res) => {
 
     // Check is hometutor execpted required condition
     const private_PricePerDayPerRerson = price.dataValues.homeTutors.isPrivateSO
-      ? req.body.private_PricePerDayPerRerson
+      ? parseInt(req.body.private_PricePerDayPerRerson)
+      : null;
+    const private_totalPricePerPerson = price.dataValues.homeTutors.isPrivateSO
+      ? parseInt(req.body.private_totalPricePerPerson)
       : null;
     const group_PricePerDayPerRerson = price.dataValues.homeTutors.isGroupSO
-      ? req.body.group_PricePerDayPerRerson
+      ? parseInt(req.body.group_PricePerDayPerRerson)
+      : null;
+    const group_totalPricePerPerson = price.dataValues.homeTutors.isGroupSO
+      ? parseInt(req.body.group_totalPricePerPerson)
       : null;
 
     if (price.dataValues.homeTutors.approvalStatusByAdmin === "Approved") {
@@ -208,7 +214,9 @@ exports.updateHTPrice = async (req, res) => {
       await HTPrice.create({
         priceName,
         private_PricePerDayPerRerson,
+        private_totalPricePerPerson,
         group_PricePerDayPerRerson,
+        group_totalPricePerPerson,
         durationType,
         homeTutorId: price.dataValues.homeTutorId,
       });
@@ -216,7 +224,9 @@ exports.updateHTPrice = async (req, res) => {
       await price.update({
         priceName,
         private_PricePerDayPerRerson,
+        private_totalPricePerPerson,
         group_PricePerDayPerRerson,
+        group_totalPricePerPerson,
         durationType,
       });
     }

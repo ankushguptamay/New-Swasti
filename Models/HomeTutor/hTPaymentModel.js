@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    noOfPeople: {
+    totalPeople: {
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
@@ -47,7 +47,4 @@ module.exports = (sequelize, DataTypes) => {
 // Foriegn key
 // userId
 // homeTutorId
-
-// This foreign key added to track data for admin. Because if payment is not verified or order created but not paid than admin panel can track which user try to join class
-// If payment is verified only then we are creating records in HTBooking table. which is for instructor and user.
-// Instructor can only see success payment.
+// hTSlotId

@@ -36,7 +36,7 @@ exports.hTutorTimeSloteValidation = (data) => {
     serviceType: joi.string().valid("Group", "Private").required(),
     serviceAreaId: joi.string().optional(),
     newServiceArea: joi.object().optional(),
-    noOfPeople: joi.number().required(),
+    noOfPeopleCanBook: joi.number().required(),
     priceId: joi.string().optional(),
     newPrice: joi
       .object({
@@ -46,7 +46,9 @@ exports.hTutorTimeSloteValidation = (data) => {
             "priceName",
             "durationType",
             "private_PricePerDayPerRerson",
-            "group_PricePerDayPerRerson"
+            "private_totalPricePerPerson",
+            "group_PricePerDayPerRerson",
+            "group_totalPricePerPerson"
           ),
         value: joi.string(),
       })
@@ -60,6 +62,8 @@ exports.hTutorTimeSloteValidation = (data) => {
       )
       .pattern(/private_PricePerDayPerRerson/, joi.string())
       .pattern(/group_PricePerDayPerRerson/, joi.string())
+      .pattern(/private_totalPricePerPerson/, joi.string())
+      .pattern(/group_totalPricePerPerson/, joi.string())
       .optional(),
   }); // .options({ allowUnknown: true });
   return schema.validate(data);
@@ -72,7 +76,7 @@ exports.bookHTValidation = (data) => {
     receipt: joi.string().required(),
     couponCode: joi.string().optional(),
     timeSloteId: joi.string().required(),
-    noOfBooking: joi.string().required()
+    noOfBooking: joi.string().required(),
   });
   return schema.validate(data);
 };
@@ -102,6 +106,8 @@ exports.hTutorPriceValidation = (data) => {
     priceName: joi.string().required(),
     private_PricePerDayPerRerson: joi.string().required(),
     group_PricePerDayPerRerson: joi.string().required(),
+    group_totalPricePerPerson: joi.string().required(),
+    private_totalPricePerPerson: joi.string().required(),
     durationType: joi
       .string()
       .valid("monthly 25", "weekly 6", "monthly 30", "weekly 7", "daily")

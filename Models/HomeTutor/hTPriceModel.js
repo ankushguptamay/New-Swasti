@@ -11,9 +11,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
       private_PricePerDayPerRerson: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
       },
       group_PricePerDayPerRerson: {
+        type: DataTypes.INTEGER,
+      },
+      private_totalPricePerPerson: {
+        type: DataTypes.INTEGER,
+      },
+      group_totalPricePerPerson: {
         type: DataTypes.INTEGER,
       },
       durationType: {
