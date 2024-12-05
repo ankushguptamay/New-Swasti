@@ -3,7 +3,7 @@ const express = require("express");
 const {
   getAllCourseCategory,
 } = require("../../../Controller/Master/courseCategoryController");
-const { getAllSkill } = require("../../Controller/Master/skillController");
+const { getAllSkill } = require("../../../Controller/Master/skillController");
 const {
   getAllCourseDuration,
 } = require("../../../Controller/Master/courseDurationController");
