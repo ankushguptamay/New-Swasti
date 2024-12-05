@@ -273,7 +273,7 @@ db.hTTimeSlote.hasMany(db.hTPayment, {
 });
 db.hTPayment.belongsTo(db.hTTimeSlote, {
   foreignKey: "hTSlotId",
-  as: "hTSlot",
+  as: "hTSlots",
 });
 
 db.homeTutor.hasMany(db.hTPayment, {

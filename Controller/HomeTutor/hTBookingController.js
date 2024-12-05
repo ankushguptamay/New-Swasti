@@ -2,7 +2,7 @@ const db = require("../../Models");
 const {
   bookHTValidation,
 } = require("../../Middleware/Validate/validateHomeTutor");
-const HTServiceArea = db.hTServiceArea;
+const HTPrice = db.hTPrice;
 const HTBooking = db.hTBooking;
 const HTPayment = db.hTPayment;
 const HTTimeSlot = db.hTTimeSlote;
@@ -25,11 +25,28 @@ exports.createHTOrder = async (req, res) => {
     if (error) {
       return res.status(400).send(error.details[0].message);
     }
-    const { amount, currency, receipt, couponCode, hTSlotIds } = req.body; // receipt is id created for this order
+    const { amount, currency, receipt, couponCode, hTSlotId } = req.body; // receipt is id created for this order
     const userId = req.user.id;
 
     const timeSlote = await HTTimeSlot.findOne({
-      where: { id: hTSlotIds, appointmentStatus: "Active", isBooked: false },
+      where: {
+        id: hTSlotId,
+        appointmentStatus: "Active",
+        isBooked: false,
+        deletedThrough: null,
+      },
+      attributes: [
+        "id",
+        "startDate",
+        "time",
+        "serviceType",
+        "noOfPeopleCanBook",
+        "durationType",
+        "homeTutorId",
+        "bookedBy",
+        "priceId",
+      ],
+      raw: true,
     });
     if (!timeSlote) {
       return res.status(400).send({
@@ -42,7 +59,7 @@ exports.createHTOrder = async (req, res) => {
     // Check is date have been passed
     const today = new Date();
     today.setMinutes(today.getMinutes() + 390); // 5.5 hours and 1 hours, user should book a slot 1 hour ahead of slot time
-    const date = `${timeSlote.date.toISOString().slice(0, 10)}T${
+    const date = `${timeSlote.startDate.toISOString().slice(0, 10)}T${
       timeSlote.time
     }:00.000Z`;
     const inMiliSecond = new Date(date).getTime();
@@ -53,27 +70,18 @@ exports.createHTOrder = async (req, res) => {
       });
     }
 
-    let noOfBooking = req.body.noOfBooking;
-    if (bookingType === "daily") {
-      // Number
-      if (timeSlote.serviceType === "Private") {
-        noOfBooking = 1;
-      }
-      // Group class validation
-      if (timeSlote.serviceType === "Group") {
-        const findBooked = await HTPayment.findAll({
-          where: {
-            hTSlotIds: hTSlotIds,
-            status: "Paid",
-            verify: true,
-          },
+    let totalPeople = req.body.totalPeople;
+    // Number
+    if (timeSlote.serviceType === "Private") {
+      totalPeople = 1;
+    } else {
+      const availableSeat =
+        parseInt(timeSlote.noOfPeopleCanBook) - parseInt(timeSlote.bookBy);
+      if (availableSeat < totalPeople) {
+        return res.status(400).send({
+          success: false,
+          message: `Soory! Only ${availableSeat} seat are available!`,
         });
-        if (findBooked.length >= parseInt(timeSlote.noOfPeopleCanBook)) {
-          return res.status(400).send({
-            success: false,
-            message: "This group class is already full! Please try another!",
-          });
-        }
       }
     }
 
@@ -83,14 +91,14 @@ exports.createHTOrder = async (req, res) => {
       (err, order) => {
         if (!err) {
           HTPayment.create({
-            noOfBooking: noOfBooking,
-            hTSlotIds: hTSlotIds,
+            durationType: timeSlote.durationType,
+            totalPeople,
+            hTSlotId: hTSlotId,
             homeTutorId: timeSlote.homeTutorId,
             userId: userId,
             amount: amount / 100,
-            userName: req.studentName,
-            currency: currency,
-            receipt: receipt,
+            currency,
+            receipt,
             razorpayOrderId: order.id,
             status: "Created",
             razorpayTime: order.created_at,
@@ -137,12 +145,10 @@ exports.verifyHTPayment = async (req, res) => {
     hmac.update(orderId + "|" + paymentId);
     // Creating the hmac in the required format
     const generated_signature = hmac.digest("hex");
+    // Find Payment record
     const purchase = await HTBooking.findOne({
-      where: {
-        razorpayOrderId: orderId,
-        verify: false,
-        status: "Created",
-      },
+      where: { razorpayOrderId: orderId },
+      raw: true,
     });
     if (!purchase) {
       res.status(400).json({
@@ -153,22 +159,21 @@ exports.verifyHTPayment = async (req, res) => {
       if (razorpay_signature === generated_signature) {
         const timeSlote = await HTTimeSlot.findOne({
           where: { id: purchase.timeSloteId },
+          raw: true,
         });
-        await timeSlote.update({
-          ...timeSlote,
-          isBooked: true,
-        });
-        await UserHTSlote.create({
-          sloteId: purchase.timeSloteId,
-          paidThroung: "Online",
-          userId: purchase.userId,
-        });
+        const bookedBy =
+          timeSlote.serviceType === "Group"
+            ? parseInt(timeSlote.bookedBy) + parseInt(purchase.totalPeople)
+            : 1;
+        // Update Slote
+        await timeSlote.update({ ...timeSlote, isBooked: true, bookedBy });
         // Update Purchase
         await purchase.update({
           ...purchase,
           status: "Paid",
           razorpayPaymentId: paymentId,
           verify: true,
+          paidThrough: "Online",
         });
         res.status(200).json({
           success: true,
@@ -205,24 +210,88 @@ exports.verifyHTPayment = async (req, res) => {
 
 exports.getMyHTBookedSloteForUser = async (req, res) => {
   try {
-    const booking = await UserHTSlote.findAll({
+    const booking = await HTPayment.findAll({
       where: {
         userId: req.user.id,
+        verify: true,
+        status: "Paid",
       },
+      attributes: [
+        "id",
+        "durationType",
+        "amount",
+        "currency",
+        "receipt",
+        "status",
+        "verify",
+        "couponCode",
+        "totalPeople",
+        "paidThrough",
+        "createdAt",
+      ],
+      include: [
+        {
+          model: HTTimeSlot,
+          as: "hTSlots",
+          where: { deletedThrough: null },
+          attributes: [
+            "id",
+            "date",
+            "time",
+            "password",
+            "timeDurationInMin",
+            "isBooked",
+            "isOnline",
+            "serviceType",
+            "bookedBy",
+            "appointmentStatus",
+            "homeTutorId",
+          ],
+          required: false,
+          include: [
+            {
+              model: HTPrice,
+              as: "hTPrices",
+              attributes: [
+                "id",
+                "priceName",
+                "private_PricePerDayPerRerson",
+                "group_PricePerDayPerRerson",
+                "private_totalPricePerPerson",
+                "group_totalPricePerPerson",
+                "durationType",
+              ],
+              required: false,
+            },
+          ],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
     });
-    const sloteId = [];
+
+    const transFormData = [];
     for (let i = 0; i < booking.length; i++) {
-      sloteId.push(booking[i].timeSloteId);
+      transFormData.push({
+        ...booking.hTSlots,
+        id: booking.dataValues.id,
+        durationType: booking.dataValues.durationType,
+        amount: booking.dataValues.amount,
+        currency: booking.dataValues.currency,
+        receipt: booking.dataValues.currency,
+        status: booking.dataValues.status,
+        verify: booking.dataValues.verify,
+        couponCode: booking.dataValues.couponCode,
+        totalPeople: booking.dataValues.totalPeople,
+        paidThrough: booking.dataValues.paidThrough,
+        createdAt: booking.dataValues.createdAt,
+      });
     }
-    const slote = await HTTimeSlot.findAll({
-      where: { id: sloteId },
-      include: [{ model: HTServiceArea, as: "serviceArea" }],
-    });
+
     // Final Response
     res.status(200).send({
       success: true,
       message: "My home tutor booked slote fetched successfully!",
-      data: slote,
+      data: transFormData,
     });
   } catch (err) {
     res.status(500).send({

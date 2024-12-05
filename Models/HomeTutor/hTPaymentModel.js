@@ -26,7 +26,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    hTSlotId: { type: DataTypes.STRING },
     couponCode: { type: DataTypes.STRING },
     isAttended: {
       type: DataTypes.BOOLEAN,
@@ -36,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
-    paidThroung: {
+    paidThrough: {
       type: DataTypes.STRING,
       validate: { isIn: [["Online", "Offline"]] },
     },
