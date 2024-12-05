@@ -36,7 +36,7 @@ exports.hTutorTimeSloteValidation = (data) => {
     serviceType: joi.string().valid("Group", "Private").required(),
     serviceAreaId: joi.string().optional(),
     newServiceArea: joi.object().optional(),
-    noOfPeopleCanBook: joi.number().required(),
+    availableSeat: joi.number().required(),
     priceId: joi.string().optional(),
     newPrice: joi
       .object({

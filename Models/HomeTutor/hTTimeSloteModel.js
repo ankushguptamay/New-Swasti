@@ -30,11 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         },
         defaultValue: "daily",
       },
-      noOfPeopleCanBook: {
+      availableSeat: {
         type: DataTypes.INTEGER,
         defaultValue: 1,
       },
-      bookedBy: {
+      bookedSeat: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },

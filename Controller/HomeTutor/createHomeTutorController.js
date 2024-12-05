@@ -149,7 +149,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
       timeDurationInMin,
       serviceType,
       newServiceArea,
-      noOfPeopleCanBook,
+      availableSeat,
       isOnline,
       newPrice,
     } = req.body;
@@ -485,7 +485,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         timeDurationInMin: timeDurationInMin,
         sloteCode: new Date().getTime(),
         serviceType: serviceType,
-        noOfPeopleCanBook: serviceType === "Private" ? 1 : noOfPeopleCanBook,
+        availableSeat: serviceType === "Private" ? 1 : availableSeat,
         time: startTime,
         isBooked: false,
         serviceAreaId,

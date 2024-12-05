@@ -40,10 +40,10 @@ exports.createHTOrder = async (req, res) => {
         "startDate",
         "time",
         "serviceType",
-        "noOfPeopleCanBook",
+        "availableSeat",
         "durationType",
         "homeTutorId",
-        "bookedBy",
+        "bookedSeat",
         "priceId",
       ],
       raw: true,
@@ -76,7 +76,7 @@ exports.createHTOrder = async (req, res) => {
       totalPeople = 1;
     } else {
       const availableSeat =
-        parseInt(timeSlote.noOfPeopleCanBook) - parseInt(timeSlote.bookBy);
+        parseInt(timeSlote.availableSeat) - parseInt(timeSlote.bookBy);
       if (availableSeat < totalPeople) {
         return res.status(400).send({
           success: false,
@@ -161,12 +161,12 @@ exports.verifyHTPayment = async (req, res) => {
           where: { id: purchase.timeSloteId },
           raw: true,
         });
-        const bookedBy =
+        const bookedSeat =
           timeSlote.serviceType === "Group"
-            ? parseInt(timeSlote.bookedBy) + parseInt(purchase.totalPeople)
+            ? parseInt(timeSlote.bookedSeat) + parseInt(purchase.totalPeople)
             : 1;
         // Update Slote
-        await timeSlote.update({ ...timeSlote, isBooked: true, bookedBy });
+        await timeSlote.update({ ...timeSlote, isBooked: true, bookedSeat });
         // Update Purchase
         await purchase.update({
           ...purchase,
@@ -243,7 +243,7 @@ exports.getMyHTBookedSloteForUser = async (req, res) => {
             "isBooked",
             "isOnline",
             "serviceType",
-            "bookedBy",
+            "bookedSeat",
             "appointmentStatus",
             "homeTutorId",
           ],

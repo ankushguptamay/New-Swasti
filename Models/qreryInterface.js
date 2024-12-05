@@ -175,7 +175,6 @@ exports.changeInData = (queryInterface) => {
   // .catch((err) => {
   //   console.log(err);
   // });
-  
   // queryInterface
   //   .addColumn("hTPrices", "private_totalPricePerPerson", {
   //     type: DataTypes.INTEGER,
@@ -215,7 +214,7 @@ exports.changeInData = (queryInterface) => {
   //     console.log(err);
   //   });
   // queryInterface
-  //   .addColumn("hTTimeSlots", "noOfPeopleCanBook", {
+  //   .addColumn("hTTimeSlots", "availableSeat", {
   //     type: DataTypes.INTEGER,
   //     defaultValue: 1,
   //   })
@@ -226,7 +225,7 @@ exports.changeInData = (queryInterface) => {
   //     console.log(err);
   //   });
   // queryInterface
-  //   .addColumn("hTTimeSlots", "bookedBy", {
+  //   .addColumn("hTTimeSlots", "bookedSeat", {
   //     type: DataTypes.INTEGER,
   //     defaultValue: 0,
   //   })
