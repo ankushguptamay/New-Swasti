@@ -20,6 +20,7 @@ const HTPrice = db.hTPrice;
 const { uploadFileToBunny } = require("../../Util/bunny");
 const { SHOW_BUNNY_FILE_HOSTNAME } = process.env;
 const fs = require("fs");
+const { raw } = require("body-parser");
 const bunnyFolderName = "ht-doc";
 
 exports.createHomeTutor = async (req, res) => {
@@ -68,7 +69,7 @@ exports.createHomeTutor = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Home Tutor created successfully!",
-      data: { homeTutorId: homeTutor.id },
+      data: { homeTutorId: homeTutor.id, isPrivateSO, isGroupSO },
     });
   } catch (err) {
     res.status(500).send({
@@ -93,6 +94,8 @@ exports.addHTutorSeviceArea = async (req, res) => {
         id: homeTutorId,
         instructorId: req.user.id,
       },
+      raw: true,
+      attributes: ["id", "isPrivateSO", "isGroupSO"],
     });
     if (!isHomeTutor) {
       return res.status(400).send({
@@ -125,7 +128,11 @@ exports.addHTutorSeviceArea = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Sevice area added successfully!",
-      data: { homeTutorId: homeTutorId },
+      data: {
+        homeTutorId: homeTutorId,
+        isPrivateSO: isHomeTutor.isPrivateSO,
+        isGroupSO: isHomeTutor.isGroupSO,
+      },
     });
   } catch (err) {
     res.status(500).send({
@@ -500,7 +507,11 @@ exports.addHTutorTimeSlote = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Time slote added successfully!",
-      data: { homeTutorId: homeTutorId },
+      data: {
+        homeTutorId: homeTutorId,
+        isPrivateSO: homeTutor.isPrivateSO,
+        isGroupSO: homeTutor.isGroupSO,
+      },
     });
   } catch (err) {
     res.status(500).send({
@@ -527,6 +538,8 @@ exports.addHTutorImage = async (req, res) => {
         id: homeTutorId,
         instructorId: req.user.id,
       },
+      attributes: ["id", "isGroupSO", "isPrivateSO"],
+      raw: true,
     });
     if (!isHomeTutor) {
       // Delete File from server
@@ -562,7 +575,11 @@ exports.addHTutorImage = async (req, res) => {
     res.status(200).send({
       success: true,
       message: `${fileCanUpload} home tutor images added successfully!`,
-      data: { homeTutorId: homeTutorId },
+      data: {
+        homeTutorId: homeTutorId,
+        isPrivateSO: isHomeTutor.isPrivateSO,
+        isGroupSO: isHomeTutor.isGroupSO,
+      },
     });
   } catch (err) {
     res.status(500).send({
@@ -587,6 +604,7 @@ exports.addHTutorPrice = async (req, res) => {
         id: homeTutorId,
         instructorId: req.user.id,
       },
+      attributes: ["id", "isGroupSO", "isPrivateSO"],
       raw: true,
     });
     if (!isHomeTutor) {
@@ -630,7 +648,11 @@ exports.addHTutorPrice = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Price chart added successfully!",
-      data: { homeTutorId: homeTutorId },
+      data: {
+        homeTutorId: homeTutorId,
+        isPrivateSO: isHomeTutor.isPrivateSO,
+        isGroupSO: isHomeTutor.isGroupSO,
+      },
     });
   } catch (err) {
     res.status(500).send({
