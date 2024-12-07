@@ -613,7 +613,9 @@ exports.addHTutorPrice = async (req, res) => {
         message: "This home tutor is not present!",
       });
     }
-    const price = await HTPrice.findOne({ where: { priceName, durationType } });
+    const price = await HTPrice.findOne({
+      where: { priceName, durationType, homeTutorId },
+    });
     if (price) {
       return res.status(400).send({
         success: false,
@@ -625,13 +627,13 @@ exports.addHTutorPrice = async (req, res) => {
       ? req.body.private_PricePerDayPerRerson
       : null;
     const private_totalPricePerPerson = isHomeTutor.isPrivateSO
-      ? parseInt(newPrice.private_totalPricePerPerson)
+      ? parseInt(req.body.private_totalPricePerPerson)
       : null;
     const group_PricePerDayPerRerson = isHomeTutor.isGroupSO
       ? req.body.group_PricePerDayPerRerson
       : null;
     const group_totalPricePerPerson = isHomeTutor.isGroupSO
-      ? parseInt(newPrice.group_totalPricePerPerson)
+      ? parseInt(req.body.group_totalPricePerPerson)
       : null;
 
     // Store in database
