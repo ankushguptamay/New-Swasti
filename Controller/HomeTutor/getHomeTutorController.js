@@ -369,10 +369,21 @@ exports.getHomeTutorForUser = async (req, res) => {
         condition.push({ isGroupSO: false });
       }
     }
+    const include = [
+      {
+        model: HTutorImages,
+        as: "images",
+        where: {
+          deletedThrough: null,
+        },
+        attributes: ["path"],
+        required: false,
+      },
+      instructorExperience,
+    ];
     // Price
-    let priceTutor = {};
     if (price) {
-      priceTutor = {
+      const priceTutor = {
         model: HTPrice,
         as: "hTPrices",
         where: {
@@ -385,6 +396,7 @@ exports.getHomeTutorForUser = async (req, res) => {
         attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
         required: true,
       };
+      include.push(priceTutor);
     }
     // Location
     const areaTutorId = [];
@@ -429,19 +441,7 @@ exports.getHomeTutorForUser = async (req, res) => {
       where: {
         [Op.and]: condition,
       },
-      include: [
-        {
-          model: HTutorImages,
-          as: "images",
-          where: {
-            deletedThrough: null,
-          },
-          attributes: ["path"],
-          required: false,
-        },
-        priceTutor,
-        instructorExperience,
-      ],
+      include,
       order: [["createdAt", "DESC"]],
     });
 
@@ -1207,9 +1207,9 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     }
 
     // Price
-    let priceCondition = {};
+    const include = [];
     if (price) {
-      priceCondition = {
+      const priceCondition = {
         model: HTPrice,
         as: "hTPrices",
         where: {
@@ -1222,6 +1222,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         attributes: ["id", "homeTutorId"],
         required: true,
       };
+      include.push(priceCondition);
     }
 
     const slotCondition = [{ deletedThrough: null }, { isBooked: false }];
@@ -1229,7 +1230,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     const homeTutor = await HomeTutor.findAll({
       where: { [Op.and]: condition },
       attributes: ["id"],
-      include: [priceCondition],
+      include,
     });
     const finalHomeTutorIds = [];
     for (let i = 0; i < homeTutor.length; i++) {
