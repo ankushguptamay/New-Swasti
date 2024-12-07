@@ -28,6 +28,6 @@ admin.delete("/deleteInstructorReview/:id", deleteInstructorReview); //id = revi
 admin.get("/hTReview/:id", getHTReview); //id = homeTutorId
 admin.get("/hTAverageRating/:id", getHTAverageRating); //id = homeTutorId
 admin.delete("/softDeleteHTReview/:id", softDeleteHTReview); //id = review Id
-admin.delete("/updateHTReview/:id", updateHTReview); //id = review Id
+admin.put("/updateHTReview/:id", updateHTReview); //id = review Id
 
 module.exports = admin;

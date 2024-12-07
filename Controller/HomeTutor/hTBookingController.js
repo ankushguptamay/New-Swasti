@@ -3,7 +3,6 @@ const {
   bookHTValidation,
 } = require("../../Middleware/Validate/validateHomeTutor");
 const HTPrice = db.hTPrice;
-const HTBooking = db.hTBooking;
 const HTPayment = db.hTPayment;
 const HTTimeSlot = db.hTTimeSlote;
 const HomeTutor = db.homeTutor;
@@ -146,7 +145,7 @@ exports.verifyHTPayment = async (req, res) => {
     // Creating the hmac in the required format
     const generated_signature = hmac.digest("hex");
     // Find Payment record
-    const purchase = await HTBooking.findOne({
+    const purchase = await HTPayment.findOne({
       where: { razorpayOrderId: orderId },
       raw: true,
     });

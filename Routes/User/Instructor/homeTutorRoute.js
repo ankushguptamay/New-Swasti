@@ -10,7 +10,6 @@ const {
 const {
   getHTAverageRating,
   getHTReview,
-  updateHTReview,
   softDeleteHTReview,
 } = require("../../../Controller/Review/hTReviewController");
 const {
@@ -60,7 +59,6 @@ instructor.use((req, res, next) => {
 instructor.get("/hTReview/:id", getHTReview); //id = homeTutorId
 instructor.get("/hTAverageRating/:id", getHTAverageRating); //id = homeTutorId
 instructor.delete("/deleteHTReview/:id", softDeleteHTReview); //id = review Id
-instructor.delete("/updateHTReview/:id", updateHTReview); //id = review Id
 
 // Home Tutor
 instructor.post("/createHomeTutor", createHomeTutor);

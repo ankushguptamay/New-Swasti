@@ -46,7 +46,7 @@ exports.getMyHomeTutorForInstructor = async (req, res) => {
           as: "timeSlotes",
           where: {
             deletedThrough: null,
-            date: todayDate,
+            startDate: todayDate,
           },
           attributes: {
             exclude: ["password", "createdAt", "updatedAt", "deletedThrough"],
@@ -241,7 +241,7 @@ exports.getHomeTutorById = async (req, res) => {
           as: "timeSlotes",
           where: {
             deletedThrough: null,
-            date: todayDate,
+            startDate: todayDate,
           },
           attributes: {
             exclude: ["password", "createdAt", "updatedAt", "deletedThrough"],

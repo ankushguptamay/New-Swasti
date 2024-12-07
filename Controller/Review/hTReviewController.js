@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const db = require("../../Models");
-const HTBooking = db.hTBooking;
+const HTPayment = db.hTPayment;
 const HTReview = db.hTReview;
 const {
   reviewValidation,
@@ -15,7 +15,7 @@ exports.giveHTReviewForUser = async (req, res) => {
     }
     const { reviewerName, reviewMessage, reviewStar } = req.body;
     // Check is student has this HT
-    const isHTHas = await HTBooking.findOne({
+    const isHTHas = await HTPayment.findOne({
       where: {
         homeTutorId: req.params.id,
         userId: req.user.id,
@@ -34,6 +34,7 @@ exports.giveHTReviewForUser = async (req, res) => {
         reviewerId: req.user.id,
         homeTutorId: req.params.id,
       },
+      raw: true,
     });
     if (!isReview) {
       // store in database
@@ -43,6 +44,12 @@ exports.giveHTReviewForUser = async (req, res) => {
         reviewerName: reviewerName,
         homeTutorId: req.params.id,
         reviewerId: req.user.id,
+      });
+    } else {
+      await isReview.update({
+        reviewMessage: reviewMessage,
+        reviewStar: parseInt(reviewStar),
+        reviewerName: reviewerName,
       });
     }
     // Final response
@@ -157,15 +164,6 @@ exports.softDeleteHTReview = async (req, res) => {
           message: "You can not delete this review!",
         });
       }
-    } else if (req.user) {
-      if (review.reviewerId === req.user.id) {
-        await review.destroy();
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "You can not delete this review!",
-        });
-      }
     } else if (req.admin) {
       await review.destroy();
     } else {
@@ -205,47 +203,14 @@ exports.updateHTReview = async (req, res) => {
         message: "This review is not present!",
       });
     }
-    if (req.user) {
-      if (review.reviewerId === req.user.id) {
-        await review.update({
-          ...review,
-          reviewMessage: reviewMessage,
-          reviewStar: parseInt(reviewStar),
-          reviewerName: reviewerName,
-        });
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "You can not update this review!",
-        });
-      }
-    } else if (req.user) {
-      if (review.reviewerId === req.user.id) {
-        await review.update({
-          ...review,
-          reviewMessage: reviewMessage,
-          reviewStar: parseInt(reviewStar),
-          reviewerName: reviewerName,
-        });
-      } else {
-        return res.status(400).send({
-          success: false,
-          message: "You can not update this review!",
-        });
-      }
-    } else if (req.admin) {
-      await review.update({
-        ...review,
-        reviewMessage: reviewMessage,
-        reviewStar: parseInt(reviewStar),
-        reviewerName: reviewerName,
-      });
-    } else {
-      return res.status(400).send({
-        success: false,
-        message: "You can not update this review!",
-      });
-    }
+
+    await review.update({
+      ...review,
+      reviewMessage: reviewMessage,
+      reviewStar: parseInt(reviewStar),
+      reviewerName: reviewerName,
+    });
+
     // Final response
     res.status(200).send({
       success: true,

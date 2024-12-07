@@ -14,7 +14,6 @@ const {
   giveHTReviewForUser,
   getHTAverageRating,
   getHTReview,
-  updateHTReview,
   softDeleteHTReview,
 } = require("../../../Controller/Review/hTReviewController");
 const student = express.Router();
@@ -34,6 +33,5 @@ student.post("/giveHTReview/:id", giveHTReviewForUser); //id = homeTutorId
 student.get("/hTAverageRating/:id", getHTAverageRating); //id = homeTutorId
 student.get("/hTReview/:id", getHTReview); //id = homeTutorId
 student.delete("/deleteHTReview/:id", softDeleteHTReview); //id = review Id
-student.put("/updateHTReview/:id", updateHTReview); //id = review Id
 
 module.exports = student;

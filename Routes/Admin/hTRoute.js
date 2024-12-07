@@ -27,12 +27,6 @@ const {
   restoreHTutorTimeSlote,
   restoreHomeTutor,
 } = require("../../Controller/HomeTutor/restoreHomeTutorController");
-const {
-  getHTAverageRating,
-  getHTReview,
-  updateHTReview,
-  softDeleteHTReview,
-} = require("../../Controller/Review/hTReviewController");
 const admin = express.Router();
 
 // middleware
@@ -41,12 +35,6 @@ const { isAdminPresent } = require("../../Middleware/isPresent");
 
 admin.use(verifyAdminJWT);
 admin.use(isAdminPresent);
-
-// 3. Home Tutor Review
-admin.get("/hTReview/:id", getHTReview); //id = homeTutorId
-admin.get("/hTAverageRating/:id", getHTAverageRating); //id = homeTutorId
-admin.delete("/softDeleteHTReview/:id", softDeleteHTReview); //id = review Id
-admin.delete("/updateHTReview/:id", updateHTReview); //id = review Id
 
 // Home Tutor
 admin.get("/homeTutors", getHomeTutorForAdmin);

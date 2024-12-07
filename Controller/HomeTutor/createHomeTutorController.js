@@ -190,7 +190,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         });
       }
     } else if (serviceType === "Private") {
-      if (!homeTutor.isGroupSO) {
+      if (!homeTutor.isPrivateSO) {
         return res.status(400).send({
           success: false,
           message:
@@ -312,7 +312,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
           });
           priceId = price.dataValues.id;
         } else {
-          priceId = isPrice.dataValues.id;
+          priceId = isPrice.id;
         }
       } else {
         return res.status(400).send({
@@ -457,7 +457,7 @@ exports.addHTutorTimeSlote = async (req, res) => {
         "endDate",
         "timeDurationInMin",
         "durationType",
-        "startTime",
+        "time",
       ],
     });
 
@@ -606,13 +606,13 @@ exports.addHTutorPrice = async (req, res) => {
     const private_PricePerDayPerRerson = isHomeTutor.isPrivateSO
       ? req.body.private_PricePerDayPerRerson
       : null;
-    const private_totalPricePerPerson = homeTutor.isPrivateSO
+    const private_totalPricePerPerson = isHomeTutor.isPrivateSO
       ? parseInt(newPrice.private_totalPricePerPerson)
       : null;
     const group_PricePerDayPerRerson = isHomeTutor.isGroupSO
       ? req.body.group_PricePerDayPerRerson
       : null;
-    const group_totalPricePerPerson = homeTutor.isGroupSO
+    const group_totalPricePerPerson = isHomeTutor.isGroupSO
       ? parseInt(newPrice.group_totalPricePerPerson)
       : null;
 
