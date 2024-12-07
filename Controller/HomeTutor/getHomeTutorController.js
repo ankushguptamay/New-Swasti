@@ -639,11 +639,12 @@ exports.getHomeTutorByIdForUser = async (req, res) => {
             as: "timeSlotes",
             where: {
               deletedThrough: null,
-              date: todayDate,
+              startDate: todayDate,
             },
             attributes: [
               "id",
-              "date",
+              "startDate",
+              "endDate",
               "time",
               "timeDurationInMin",
               "isBooked",
@@ -758,7 +759,7 @@ exports.getHTTimeSloteForUser = async (req, res) => {
       where: {
         homeTutorId: req.params.id,
         deletedThrough: null,
-        date: today,
+        startDate: today,
       },
       include: [
         {
@@ -810,7 +811,7 @@ exports.getHTTimeSlote = async (req, res) => {
       where: {
         homeTutorId: req.params.id,
         deletedThrough: null,
-        date: date,
+        startDate: date,
       },
       attributes: { exclude: ["password"] },
       include: [
@@ -922,7 +923,7 @@ exports.getDeletedHTTimeSlotes = async (req, res) => {
     }
     if (date) {
       condition.push({
-        date: date,
+        startDate: date,
       });
     }
     const timeSlote = await HTTimeSlot.findAll({
@@ -1223,11 +1224,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
       };
     }
 
-    const slotCondition = [
-      { deletedThrough: null },
-      { date },
-      { isBooked: false },
-    ];
+    const slotCondition = [{ deletedThrough: null }, { isBooked: false }];
     // Got All Home tutor
     const homeTutor = await HomeTutor.findAll({
       where: { [Op.and]: condition },
@@ -1261,7 +1258,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
     } else {
       today = todayDate;
     }
-    slotCondition.push({ date: today });
+    slotCondition.push({ startDate: today });
     if (morning_evening == "true") {
       slotCondition.push({
         [Op.or]: [
@@ -1290,7 +1287,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         where: { [Op.and]: slotCondition },
         attributes: [
           "id",
-          "date",
+          "startDate",
           "time",
           "timeDurationInMin",
           "isBooked",
