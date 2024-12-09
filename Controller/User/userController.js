@@ -1042,6 +1042,19 @@ exports.updateInstructor = async (req, res) => {
       dateOfBirth: instructor.dateOfBirth,
       totalExperienceInYears: instructor.totalExperienceInYears,
     });
+    // Update Bio in home tutor
+    if (bio !== instructor.bio)
+      await HomeTutor.update(
+        { instructorBio: bio },
+        { where: { instructorId: req.user.id } }
+      );
+    // Update name in referal
+    if (name !== instructor.name) {
+      await ReferralHistory.update(
+        { joinerName: name },
+        { where: { joinerId: req.user.id } }
+      );
+    }
     // Update
     await instructor.update({
       name: name,
@@ -1055,11 +1068,6 @@ exports.updateInstructor = async (req, res) => {
       dateOfBirth: dateOfBirth,
       totalExperienceInYears: parseInt(totalExperienceInYears),
     });
-    // Update Bio in home tutor
-    await HomeTutor.update(
-      { instructorBio: bio },
-      { where: { instructorId: req.user.id } }
-    );
     // Send final success response
     res.status(200).send({
       success: true,
@@ -1628,6 +1636,12 @@ exports.updateStudent = async (req, res) => {
       });
     }
     const name = capitalizeFirstLetter(req.body.name);
+
+    // Update name in referal
+    await ReferralHistory.update(
+      { joinerName: name },
+      { where: { joinerId: req.user.id } }
+    );
 
     // Update
     await user.update({ name: name });
