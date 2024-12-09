@@ -369,21 +369,17 @@ exports.getHomeTutorForUser = async (req, res) => {
         condition.push({ isGroupSO: false });
       }
     }
-    const include = [
-      {
-        model: HTutorImages,
-        as: "images",
-        where: {
-          deletedThrough: null,
-        },
-        attributes: ["path"],
-        required: false,
-      },
-      instructorExperience,
-    ];
+
+    let priceTutor = {
+      model: HTPrice,
+      as: "hTPrices",
+      where: { deletedThrough: null },
+      attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
+      required: true,
+    };
     // Price
     if (price) {
-      const priceTutor = {
+      priceTutor = {
         model: HTPrice,
         as: "hTPrices",
         where: {
@@ -396,7 +392,6 @@ exports.getHomeTutorForUser = async (req, res) => {
         attributes: { exclude: ["createdAt", "updatedAt", "deletedThrough"] },
         required: true,
       };
-      include.push(priceTutor);
     }
     // Location
     const areaTutorId = [];
@@ -435,13 +430,27 @@ exports.getHomeTutorForUser = async (req, res) => {
         "isPrivateSO",
         "yogaFor",
         "instructorId",
+        "language",
+        "instructorBio",
         "approvalStatusByAdmin",
         "createdAt",
       ],
       where: {
         [Op.and]: condition,
       },
-      include,
+      include: [
+        {
+          model: HTutorImages,
+          as: "images",
+          where: {
+            deletedThrough: null,
+          },
+          attributes: ["path"],
+          required: false,
+        },
+        instructorExperience,
+        priceTutor,
+      ],
       order: [["createdAt", "DESC"]],
     });
 
@@ -1289,6 +1298,7 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
         attributes: [
           "id",
           "startDate",
+          "endDate",
           "time",
           "timeDurationInMin",
           "isBooked",
@@ -1311,6 +1321,15 @@ exports.getHTMorningEveningTimeSlote = async (req, res) => {
               "yogaFor",
             ],
             include: [instructorExperience],
+          },
+          {
+            model: HTPrice,
+            as: "hTPrices",
+            where: { deletedThrough: null },
+            attributes: {
+              exclude: ["createdAt", "updatedAt", "deletedThrough"],
+            },
+            required: false,
           },
         ],
       }),
