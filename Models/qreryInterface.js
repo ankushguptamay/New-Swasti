@@ -41,22 +41,22 @@ exports.changeInData = async (queryInterface) => {
     //   .catch((err) => {
     //     console.log(err);
     //   });
-    // queryInterface
-    //   .dropTable("user_ht_slotes")
-    //   .then((res) => {
-    //     console.log("Table Droped 1!");
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-    // queryInterface
-    //   .dropTable("hTBookings")
-    //   .then((res) => {
-    //     console.log("Table Droped 1!");
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
+    queryInterface
+      .dropTable("user_ht_slotes")
+      .then((res) => {
+        console.log("Table Droped 1!");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    queryInterface
+      .dropTable("hTBookings")
+      .then((res) => {
+        console.log("Table Droped 1!");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     // queryInterface
     //   .removeColumn("hTTimeSlots", "userPreferedLanguage")
@@ -244,22 +244,22 @@ exports.changeInData = async (queryInterface) => {
     //     console.log(err);
     //   });
 
-    // await queryInterface.dropTable("homeTutorHistories");
-    // console.log("homeTutorHistories");
-    // await queryInterface.dropTable("ht_coupons");
-    // console.log("ht_coupons");
-    // await queryInterface.dropTable("hTutorImages");
-    // console.log("hTutorImages");
-    // await queryInterface.dropTable("hTPayments");
-    // console.log("hTPayments");
-    // await queryInterface.dropTable("hTTimeSlots");
-    // console.log("hTTimeSlots");
-    // await queryInterface.dropTable("hTPrices");
-    // console.log("hTPrices");
-    // await queryInterface.dropTable("hTServiceAreas");
-    // console.log("hTServiceAreas");
-    // await queryInterface.dropTable("homeTutors");
-    // console.log("homeTutors");
+    await queryInterface.dropTable("homeTutorHistories");
+    console.log("homeTutorHistories");
+    await queryInterface.dropTable("ht_coupons");
+    console.log("ht_coupons");
+    await queryInterface.dropTable("hTutorImages");
+    console.log("hTutorImages");
+    await queryInterface.dropTable("hTPayments");
+    console.log("hTPayments");
+    await queryInterface.dropTable("hTTimeSlots");
+    console.log("hTTimeSlots");
+    await queryInterface.dropTable("hTPrices");
+    console.log("hTPrices");
+    await queryInterface.dropTable("hTServiceAreas");
+    console.log("hTServiceAreas");
+    await queryInterface.dropTable("homeTutors");
+    console.log("homeTutors");
   } catch {
     (err) => {
       throw new Error(err.message);
