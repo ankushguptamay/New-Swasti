@@ -256,6 +256,8 @@ exports.changeInData = async (queryInterface) => {
     console.log("hTTimeSlots");
     await queryInterface.dropTable("hTPrices");
     console.log("hTPrices");
+    await queryInterface.dropTable("homeTutorReviews");
+    console.log("homeTutorReviews");
     await queryInterface.dropTable("hTServiceAreas");
     console.log("hTServiceAreas");
     await queryInterface.dropTable("homeTutors");
