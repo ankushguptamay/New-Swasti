@@ -34,7 +34,6 @@ exports.giveHTReviewForUser = async (req, res) => {
         reviewerId: req.user.id,
         homeTutorId: req.params.id,
       },
-      raw: true,
     });
     if (!isReview) {
       // store in database

@@ -31,7 +31,7 @@ exports.softDeleteHomeTutor = async (req, res) => {
       });
     }
     // Find Home Tutor In Database
-    const tutor = await HomeTutor.findOne({ where: condition, raw: true });
+    const tutor = await HomeTutor.findOne({ where: condition });
     if (!tutor) {
       return res.status(400).send({
         success: false,
@@ -70,7 +70,6 @@ exports.softDeleteHTutorServiceArea = async (req, res) => {
     // Find Home Tutor service area In Database
     const area = await HTServiceArea.findOne({
       where: { id: req.params.id },
-      raw: true,
     });
     if (!area) {
       return res.status(400).send({
@@ -134,7 +133,6 @@ exports.softDeleteHTutorImage = async (req, res) => {
     // Find Home Tutor images In Database
     const images = await HTutorImages.findOne({
       where: { id: req.params.id },
-      raw: true,
     });
     if (!images) {
       return res.status(400).send({
@@ -284,7 +282,6 @@ exports.softDeleteHTutorPrice = async (req, res) => {
     // Find Home Tutor price In Database
     const price = await HTPrice.findOne({
       where: { id: req.params.id },
-      raw: true,
     });
     if (!price) {
       return res.status(400).send({

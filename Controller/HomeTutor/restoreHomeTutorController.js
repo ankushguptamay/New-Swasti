@@ -14,7 +14,6 @@ exports.restoreHomeTutor = async (req, res) => {
         id: req.params.id,
         deletedAt: { [Op.ne]: null },
       },
-      raw: true,
       attributes: ["id", "deletedThrough", "deletedAt"],
       paranoid: false,
     });
@@ -57,7 +56,6 @@ exports.restoreHTutorServiceArea = async (req, res) => {
         id: req.params.id,
         deletedAt: { [Op.ne]: null },
       },
-      raw: true,
       attributes: ["id", "deletedThrough", "deletedAt"],
       paranoid: false,
     });
@@ -100,7 +98,6 @@ exports.restoreHTutorPrice = async (req, res) => {
         id: req.params.id,
         deletedAt: { [Op.ne]: null },
       },
-      raw: true,
       attributes: ["id", "deletedThrough", "deletedAt"],
       paranoid: false,
     });
@@ -143,7 +140,6 @@ exports.restoreHTutorTimeSlote = async (req, res) => {
         id: req.params.id,
         deletedAt: { [Op.ne]: null },
       },
-      raw: true,
       attributes: ["id", "deletedThrough", "deletedAt"],
       paranoid: false,
     });
@@ -197,7 +193,6 @@ exports.restoreHTutorImage = async (req, res) => {
         id: req.params.id,
         deletedAt: { [Op.ne]: null },
       },
-      raw: true,
       attributes: ["id", "deletedThrough", "deletedAt", "homeTutorId"],
       paranoid: false,
     });

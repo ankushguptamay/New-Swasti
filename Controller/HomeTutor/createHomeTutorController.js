@@ -20,7 +20,6 @@ const HTPrice = db.hTPrice;
 const { uploadFileToBunny } = require("../../Util/bunny");
 const { SHOW_BUNNY_FILE_HOSTNAME } = process.env;
 const fs = require("fs");
-const { raw } = require("body-parser");
 const bunnyFolderName = "ht-doc";
 
 exports.createHomeTutor = async (req, res) => {

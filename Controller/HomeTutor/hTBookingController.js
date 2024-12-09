@@ -58,7 +58,7 @@ exports.createHTOrder = async (req, res) => {
     // Check is date have been passed
     const today = new Date();
     today.setMinutes(today.getMinutes() + 390); // 5.5 hours and 1 hours, user should book a slot 1 hour ahead of slot time
-    const date = `${timeSlote.startDate.toISOString().slice(0, 10)}T${
+    const date = `${timeSlote.startDate.slice(0, 10)}T${
       timeSlote.time
     }:00.000Z`;
     const inMiliSecond = new Date(date).getTime();
@@ -147,18 +147,16 @@ exports.verifyHTPayment = async (req, res) => {
     // Find Payment record
     const purchase = await HTPayment.findOne({
       where: { razorpayOrderId: orderId },
-      raw: true,
     });
     if (!purchase) {
       res.status(400).json({
         success: false,
         message: "This payment order is not present!",
       });
-    } else if (purchase.verify === false && purchase.status === "Created") {
+    } else if (!purchase.verify && purchase.status === "Created") {
       if (razorpay_signature === generated_signature) {
         const timeSlote = await HTTimeSlot.findOne({
-          where: { id: purchase.timeSloteId },
-          raw: true,
+          where: { id: purchase.hTSlotId },
         });
         const bookedSeat =
           timeSlote.serviceType === "Group"
@@ -195,7 +193,7 @@ exports.verifyHTPayment = async (req, res) => {
       });
     } else {
       res.status(400).json({
-        success: true,
+        success: false,
         message: "Unexpected error!",
       });
     }
@@ -235,7 +233,8 @@ exports.getMyHTBookedSloteForUser = async (req, res) => {
           where: { deletedThrough: null },
           attributes: [
             "id",
-            "date",
+            "startDate",
+            "endDate",
             "time",
             "password",
             "timeDurationInMin",
