@@ -2,7 +2,7 @@ const db = require("../../../Models");
 const { Op } = require("sequelize");
 const { addExperience } = require("../../../Middleware/Validate/validateUser");
 const InstructorExperience = db.instructorExperience;
-const User = db.user;
+const Skill = db.skill;
 
 exports.addExperience = async (req, res) => {
   try {
@@ -183,20 +183,26 @@ exports.getExperienceById = async (req, res) => {
   try {
     let argument = {
       where: { id: req.params.id },
+      raw: true,
     };
     if (req.admin) {
-      argument = {
-        where: { id: req.params.id },
-        paranoid: false,
-      };
+      argument = { ...argument, paranoid: false };
     }
-    const experience = await InstructorExperience.findOne(argument);
+    let experience = await InstructorExperience.findOne(argument);
     if (!experience) {
       return res.status(400).send({
         success: true,
         message: "This experience is not present!",
       });
     }
+
+    const skills = await Skill.findAll({
+      where: { skill: JSON.parse(experience.skills) },
+      attributes: ["id", "skill"],
+      raw: true,
+    });
+
+    experience = { ...experience, skills };
     // Final response
     res.status(200).send({
       success: true,

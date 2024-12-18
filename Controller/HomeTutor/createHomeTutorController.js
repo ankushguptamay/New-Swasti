@@ -334,12 +334,12 @@ exports.addHTutorTimeSlote = async (req, res) => {
     }
 
     function getCoveredDates(slot) {
-      const { startDate, endDate, dateDurationType } = slot;
+      const { startDate, endDate, durationType } = slot;
       const start = moment(startDate);
       const end = moment(endDate);
       const coveredDates = [];
 
-      if (dateDurationType === "daily") {
+      if (durationType === "daily") {
         if (startDate === endDate) {
           coveredDates.push(start.format("YYYY-MM-DD"));
         } else {
@@ -349,8 +349,8 @@ exports.addHTutorTimeSlote = async (req, res) => {
             current.add(1, "days");
           }
         }
-      } else if (dateDurationType.startsWith("weekly")) {
-        const weeklyDay = parseInt(dateDurationType.split(" ")[1], 10); // Extract the weekday
+      } else if (durationType.startsWith("weekly")) {
+        const weeklyDay = parseInt(durationType.split(" ")[1], 10); // Extract the weekday
         let current = start.clone().day(weeklyDay);
         if (current.isBefore(start)) current.add(1, "week"); // Ensure within range
 
@@ -358,8 +358,8 @@ exports.addHTutorTimeSlote = async (req, res) => {
           coveredDates.push(current.format("YYYY-MM-DD"));
           current.add(1, "week");
         }
-      } else if (dateDurationType.startsWith("monthly")) {
-        const monthlyDay = parseInt(dateDurationType.split(" ")[1], 10); // Extract the day of the month
+      } else if (durationType.startsWith("monthly")) {
+        const monthlyDay = parseInt(durationType.split(" ")[1], 10); // Extract the day of the month
         let current = start.clone().date(monthlyDay);
         if (current.isBefore(start)) current.add(1, "month"); // Ensure within range
 
